@@ -4,17 +4,19 @@ import (
 	"context"
 	"fmt"
 	"masterRad/db"
+	"masterRad/dto"
+	"masterRad/enum"
 )
 
 var (
-	CheckLogin = checkLogin
+	Login = login
 )
 
-func checkLogin(ctx context.Context, name, passhash string) (userExists bool) {
+func login(ctx context.Context, name, passhash string) (autorizacija *dto.Autorizacija, err error) {
 	d := ctx.Value(db.RunnerKey).(db.Runner)
 
 	query := `
-		select *
+		select uid, rola, username
 		from korisnik
 		where username = $1
 		and password = $2`
@@ -32,5 +34,14 @@ func checkLogin(ctx context.Context, name, passhash string) (userExists bool) {
 		return
 	}
 
-	return rr.ScanNext()
+	if rr.ScanNext() {
+		autorizacija = &dto.Autorizacija{}
+
+		autorizacija.Korisnik_UID = rr.ReadByIdxString(0)
+		autorizacija.Rola = enum.Rola(rr.ReadByIdxInt64(1))
+		autorizacija.Username = rr.ReadByIdxString(2)
+	}
+
+	err = rr.Error()
+	return
 }

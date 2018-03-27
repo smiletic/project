@@ -1,16 +1,17 @@
 package main
 
 import (
-	"context"
+	"encoding/gob"
 	"fmt"
 	"masterRad/config"
-	"masterRad/db"
+	"masterRad/dto"
+	"masterRad/handler"
 	"masterRad/server"
-	"masterRad/util"
 	"math/rand"
 	"net/http"
 	"time"
 
+	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
 )
@@ -55,72 +56,6 @@ func clearSession(response http.ResponseWriter) {
 	http.SetCookie(response, cookie)
 }
 
-// login handler
-
-func loginHandler(response http.ResponseWriter, request *http.Request) {
-	ctx := context.Background()
-	dbRunner := db.CreateRunner(db.Handle)
-	ctx = context.WithValue(ctx, db.RunnerKey, dbRunner)
-	name := request.FormValue("name")
-	pass := request.FormValue("password")
-	redirectTarget := "/"
-	code := 302
-	if name != "" && pass != "" {
-		if util.Login(ctx, name, pass) {
-			setSession(name, response)
-			redirectTarget = "/internal"
-		} else {
-			redirectTarget = "/"
-			code = 401
-		}
-	}
-	http.Redirect(response, request, redirectTarget, code)
-}
-
-// logout handler
-
-func logoutHandler(response http.ResponseWriter, request *http.Request) {
-	clearSession(response)
-	http.Redirect(response, request, "/", 302)
-}
-
-// index page
-
-const indexPage = `
-<h1>Login</h1>
-<form method="post" action="/login">
-    <label for="name">User name</label>
-    <input type="text" id="name" name="name">
-    <label for="password">Password</label>
-    <input type="password" id="password" name="password">
-    <button type="submit">Login</button>
-</form>
-`
-
-func indexPageHandler(response http.ResponseWriter, request *http.Request) {
-	fmt.Fprintf(response, indexPage)
-}
-
-// internal page
-
-const internalPage = `
-<h1>Internal</h1>
-<hr>
-<small>User: %s</small>
-<form method="post" action="/logout">
-    <button type="submit">Logout</button>
-</form>
-`
-
-func internalPageHandler(response http.ResponseWriter, request *http.Request) {
-	userName := getUserName(request)
-	if userName != "" {
-		fmt.Fprintf(response, internalPage, userName)
-	} else {
-		http.Redirect(response, request, "/", 302)
-	}
-}
-
 // server main method
 
 var router = mux.NewRouter()
@@ -128,6 +63,7 @@ var router = mux.NewRouter()
 func main() {
 
 	var err error
+	gob.Register(dto.Autorizacija{})
 
 	// Seed function is part of rand initialization.
 	rand.Seed(time.Now().UTC().UnixNano())
@@ -146,12 +82,9 @@ func main() {
 		return
 	}
 
-	router.HandleFunc("/", indexPageHandler)
-	router.HandleFunc("/internal", internalPageHandler)
+	http.HandleFunc("/auth/", handler.HandleAuthorized)
+	http.HandleFunc("/login", handler.Login)
+	http.HandleFunc("/logout", handler.Logout)
 
-	router.HandleFunc("/login", loginHandler).Methods("POST")
-	router.HandleFunc("/logout", logoutHandler).Methods("POST")
-
-	http.Handle("/", router)
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":8080", context.ClearHandler(http.DefaultServeMux))
 }
