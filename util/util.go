@@ -13,7 +13,7 @@ var (
 	GetMD5Hash = getMD5Hash
 )
 
-func login(ctx context.Context, name, pass string) (autorizacija *dto.Autorizacija, err error) {
+func login(ctx context.Context, name, pass string) (autorizacija *dto.Authorization, err error) {
 	pass = GetMD5Hash(pass)
 	return data.Login(ctx, name, pass)
 }
@@ -21,5 +21,6 @@ func login(ctx context.Context, name, pass string) (autorizacija *dto.Autorizaci
 func getMD5Hash(text string) string {
 	hasher := md5.New()
 	hasher.Write([]byte(text))
-	return hex.EncodeToString(hasher.Sum(nil))
+	hash := hex.EncodeToString(hasher.Sum(nil))
+	return hash
 }

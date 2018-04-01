@@ -12,12 +12,12 @@ var (
 	Login = login
 )
 
-func login(ctx context.Context, name, passhash string) (autorizacija *dto.Autorizacija, err error) {
+func login(ctx context.Context, name, passhash string) (autorizacija *dto.Authorization, err error) {
 	d := ctx.Value(db.RunnerKey).(db.Runner)
 
 	query := `
-		select uid, rola, username
-		from korisnik
+		select uid, role, username
+		from system_user
 		where username = $1
 		and password = $2`
 
@@ -35,10 +35,10 @@ func login(ctx context.Context, name, passhash string) (autorizacija *dto.Autori
 	}
 
 	if rr.ScanNext() {
-		autorizacija = &dto.Autorizacija{}
+		autorizacija = &dto.Authorization{}
 
 		autorizacija.Korisnik_UID = rr.ReadByIdxString(0)
-		autorizacija.Rola = enum.Rola(rr.ReadByIdxInt64(1))
+		autorizacija.Role = enum.Role(rr.ReadByIdxInt64(1))
 		autorizacija.Username = rr.ReadByIdxString(2)
 	}
 

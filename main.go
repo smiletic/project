@@ -63,7 +63,7 @@ var router = mux.NewRouter()
 func main() {
 
 	var err error
-	gob.Register(dto.Autorizacija{})
+	gob.Register(dto.Authorization{})
 
 	// Seed function is part of rand initialization.
 	rand.Seed(time.Now().UTC().UnixNano())

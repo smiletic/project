@@ -16,161 +16,178 @@ SET search_path = public, pg_catalog;
 -- Drop current version tables
 
 DROP TABLE IF EXISTS 
-	popunjen_test,
+	filled_test,
 	test,
-	pregled,
-	pacijent,
-	doktor,
+	examination,
+	patient,
+	doctor,
 	administrator,
-	rola,
-	specijalizacija,
-	korisnik,
-	zaposleni,
-	osoba
+	role,
+	specialty,
+	system_user,
+	employee,
+	person
 	CASCADE;
 
-CREATE TABLE osoba (
+CREATE TABLE person (
     uid uuid NOT NULL DEFAULT uuid_generate_v1(),
-	ime text NOT NULL,
-	prezime text NOT NULL,
-	jmbg text NOT NULL,
-	datum_rodjenja date,
-	adresa text,
+	name text NOT NULL,
+	surname text NOT NULL,
+	JMBG text NOT NULL,
+	date_of_birth date,
+	adress text,
 	email text,
-	CONSTRAINT osoba_uid_pkey PRIMARY KEY (uid)
+	CONSTRAINT person_uid_pkey PRIMARY KEY (uid)
 );
 
-ALTER TABLE osoba OWNER TO postgres;
+ALTER TABLE person OWNER TO postgres;
 
 
-CREATE TABLE pacijent (
+CREATE TABLE patient (
     uid uuid NOT NULL DEFAULT uuid_generate_v1(),
-	osoba_uid uuid NOT NULL,
-	broj_kartona text NOT NULL,
-	broj_isprave text NOT NULL,
-	isprava_vazi_do date NOT NULL,
-	CONSTRAINT pacijent_suid_pkey PRIMARY KEY (uid),
-	CONSTRAINT fk_osoba FOREIGN KEY (osoba_uid)
-		REFERENCES osoba (uid) MATCH SIMPLE
+	person_uid uuid NOT NULL,
+	medical_record_id text NOT NULL,
+	health_card_id text NOT NULL,
+	health_card_valid_until date NOT NULL,
+	CONSTRAINT patient_uid_pkey PRIMARY KEY (uid),
+	CONSTRAINT fk_person FOREIGN KEY (person_uid)
+		REFERENCES person (uid) MATCH SIMPLE
 		ON UPDATE NO ACTION
 		ON DELETE CASCADE
 );
 
-ALTER TABLE pacijent OWNER TO postgres;
+ALTER TABLE patient OWNER TO postgres;
 
-CREATE TABLE zaposleni (
+CREATE TABLE employee (
     uid uuid NOT NULL DEFAULT uuid_generate_v1(),
-	osoba_uid uuid NOT NULL,
-	broj_radne_isprave text NOT NULL,
-	CONSTRAINT zaposleni_uid_pkey PRIMARY KEY (uid),
-	CONSTRAINT fk_osoba FOREIGN KEY (osoba_uid)
-		REFERENCES osoba (uid) MATCH SIMPLE
+	person_uid uuid NOT NULL,
+	work_document_id text NOT NULL,
+	CONSTRAINT employee_uid_pkey PRIMARY KEY (uid),
+	CONSTRAINT fk_person FOREIGN KEY (person_uid)
+		REFERENCES person (uid) MATCH SIMPLE
 		ON UPDATE NO ACTION
 		ON DELETE CASCADE
 );
 
-ALTER TABLE zaposleni OWNER TO postgres;
+ALTER TABLE employee OWNER TO postgres;
 
 
-CREATE TABLE specijalizacija (
-	id_specijalizacije int NOT NULL,
-	ime_speccijalizacije text NOT NULL,
-	CONSTRAINT id_specijalizacije_pkey PRIMARY KEY (id_specijalizacije)
+CREATE TABLE specialty (
+	specialty_id int NOT NULL,
+	specialty_name text NOT NULL,
+	CONSTRAINT specialty_id_pkey PRIMARY KEY (specialty_id)
 );
 
-ALTER TABLE specijalizacija OWNER TO postgres;
+ALTER TABLE specialty OWNER TO postgres;
 
-CREATE TABLE doktor (
+CREATE TABLE doctor (
     uid uuid NOT NULL DEFAULT uuid_generate_v1(),
-	zaposleni_uid uuid NOT NULL,
-	broj_licensce text NOT NULL,
-	specijalnost int NOT NULL,
-	CONSTRAINT doktor_uid_pkey PRIMARY KEY (uid),
-	CONSTRAINT fk_zaposleni FOREIGN KEY (zaposleni_uid)
-		REFERENCES zaposleni (uid) MATCH SIMPLE
+	employee_uid uuid NOT NULL,
+	license_number text NOT NULL,
+	specialty_id int NOT NULL,
+	CONSTRAINT doctor_uid_pkey PRIMARY KEY (uid),
+	CONSTRAINT fk_employee FOREIGN KEY (employee_uid)
+		REFERENCES employee (uid) MATCH SIMPLE
 		ON UPDATE NO ACTION
 		ON DELETE CASCADE,
-	CONSTRAINT fk_specijalnost FOREIGN KEY (specijalnost)
-		REFERENCES specijalizacija (id_specijalizacije) MATCH SIMPLE
+	CONSTRAINT fk_specialty FOREIGN KEY (specialty_id)
+		REFERENCES specialty (specialty_id) MATCH SIMPLE
 		ON UPDATE NO ACTION
 		ON DELETE CASCADE
 );
 
-ALTER TABLE doktor OWNER TO postgres;
+ALTER TABLE doctor OWNER TO postgres;
 
 CREATE TABLE administrator (
     uid uuid NOT NULL DEFAULT uuid_generate_v1(),
-	zaposleni_uid uuid NOT NULL,
+	employee_uid uuid NOT NULL,
 	CONSTRAINT administrator_uid_pkey PRIMARY KEY (uid),
-	CONSTRAINT fk_zaposleni FOREIGN KEY (zaposleni_uid)
-		REFERENCES zaposleni (uid) MATCH SIMPLE
+	CONSTRAINT fk_employee FOREIGN KEY (employee_uid)
+		REFERENCES employee (uid) MATCH SIMPLE
 		ON UPDATE NO ACTION
 		ON DELETE CASCADE
 );
 
 ALTER TABLE administrator OWNER TO postgres;
 
-CREATE TABLE rola (
-	id_role int NOT NULL,
-	ime_role text NOT NULL,
-	CONSTRAINT id_role_pkey PRIMARY KEY (id_role)
+CREATE TABLE nurse (
+    uid uuid NOT NULL DEFAULT uuid_generate_v1(),
+	employee_uid uuid NOT NULL,
+	CONSTRAINT nurse_uid_pkey PRIMARY KEY (uid),
+	CONSTRAINT fk_employee FOREIGN KEY (employee_uid)
+		REFERENCES employee (uid) MATCH SIMPLE
+		ON UPDATE NO ACTION
+		ON DELETE CASCADE
 );
 
-ALTER TABLE rola OWNER TO postgres;
+ALTER TABLE nurse OWNER TO postgres;
 
-CREATE TABLE korisnik (
+CREATE TABLE role (
+	role_id int NOT NULL,
+	role_name text NOT NULL,
+	CONSTRAINT role_id_pkey PRIMARY KEY (role_id)
+);
+
+ALTER TABLE role OWNER TO postgres;
+
+CREATE TABLE system_user (
     uid uuid NOT NULL DEFAULT uuid_generate_v1(),
-	zaposleni_uid uuid NOT NULL,
-	rola int NOT NULL,
+	employee_uid uuid NOT NULL,
+	role int NOT NULL,
 	username text NOT NULL,
 	password text NOT NULL,
-	CONSTRAINT korisnik_uid_pkey PRIMARY KEY (uid),
-	CONSTRAINT fk_zaposleni FOREIGN KEY (zaposleni_uid)
-		REFERENCES zaposleni (uid) MATCH SIMPLE
+	CONSTRAINT system_user_uid_pkey PRIMARY KEY (uid),
+	CONSTRAINT fk_employee FOREIGN KEY (employee_uid)
+		REFERENCES employee (uid) MATCH SIMPLE
 		ON UPDATE NO ACTION
 		ON DELETE CASCADE,
-	CONSTRAINT fk_rola FOREIGN KEY (rola)
-		REFERENCES rola (id_role) MATCH SIMPLE
+	CONSTRAINT fk_role FOREIGN KEY (role)
+		REFERENCES role (role_id) MATCH SIMPLE
 		ON UPDATE NO ACTION
 		ON DELETE CASCADE
 );
 
-ALTER TABLE korisnik OWNER TO postgres;
+ALTER TABLE system_user OWNER TO postgres;
 
-CREATE TABLE pregled (
+CREATE TABLE examination (
     uid uuid NOT NULL DEFAULT uuid_generate_v1(),
-	doktor_uid uuid NOT NULL,
-	pacijent_uid uuid NOT NULL,
-	datum_pregleda date NOT NULL DEFAULT now(),
-	CONSTRAINT pregled_uid_pkey PRIMARY KEY (uid),
-	CONSTRAINT fk_doktor FOREIGN KEY (doktor_uid)
-		REFERENCES doktor (uid) MATCH SIMPLE
+	doctor_uid uuid NOT NULL,
+	patient_uid uuid NOT NULL,
+	examination_date date NOT NULL DEFAULT now(),
+	CONSTRAINT examination_uid_pkey PRIMARY KEY (uid),
+	CONSTRAINT fk_doctor FOREIGN KEY (doctor_uid)
+		REFERENCES doctor (uid) MATCH SIMPLE
 		ON UPDATE NO ACTION
 		ON DELETE CASCADE,
-	CONSTRAINT fk_pacijent FOREIGN KEY (pacijent_uid)
-		REFERENCES pacijent (uid) MATCH SIMPLE
+	CONSTRAINT fk_patient FOREIGN KEY (patient_uid)
+		REFERENCES patient (uid) MATCH SIMPLE
 		ON UPDATE NO ACTION
 		ON DELETE CASCADE
 );
 
-ALTER TABLE pregled OWNER TO postgres;
+ALTER TABLE examination OWNER TO postgres;
 
 CREATE TABLE test (
     uid uuid NOT NULL DEFAULT uuid_generate_v1(),
-	pitanja jsonb NOT NULL,
-	CONSTRAINT test_uid_pkey PRIMARY KEY (uid)
+	specialty_id int NOT NULL,
+	questions jsonb NOT NULL,
+	CONSTRAINT test_uid_pkey PRIMARY KEY (uid),
+	CONSTRAINT fk_specialty FOREIGN KEY (specialty_id)
+		REFERENCES specialty (specialty_id) MATCH SIMPLE
+		ON UPDATE NO ACTION
+		ON DELETE CASCADE
 );
 
 ALTER TABLE test OWNER TO postgres;
 
-CREATE TABLE popunjen_test (
+CREATE TABLE filled_test (
     uid uuid NOT NULL DEFAULT uuid_generate_v1(),
-	pregled_uid uuid NOT NULL,
+	examination_uid uuid NOT NULL,
 	test_uid uuid NOT NULL,
-	odgovori jsonb NOT NULL,
-	CONSTRAINT popunjen_test_uid_pkey PRIMARY KEY (uid),
-	CONSTRAINT fk_pregled FOREIGN KEY (pregled_uid)
-		REFERENCES pregled (uid) MATCH SIMPLE
+	answers jsonb NOT NULL,
+	CONSTRAINT filled_test_uid_pkey PRIMARY KEY (uid),
+	CONSTRAINT fk_examination FOREIGN KEY (examination_uid)
+		REFERENCES examination (uid) MATCH SIMPLE
 		ON UPDATE NO ACTION
 		ON DELETE CASCADE,
 	CONSTRAINT fk_test FOREIGN KEY (test_uid)
@@ -179,4 +196,4 @@ CREATE TABLE popunjen_test (
 		ON DELETE CASCADE
 );
 
-ALTER TABLE popunjen_test OWNER TO postgres;
+ALTER TABLE filled_test OWNER TO postgres;

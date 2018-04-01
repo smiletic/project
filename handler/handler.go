@@ -6,8 +6,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"masterRad/db"
+	"masterRad/dto"
+	"masterRad/enum"
+	"masterRad/serverErr"
 	"masterRad/util"
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/sessions"
 )
@@ -29,12 +33,79 @@ func handleAuthorized(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Forbidden", http.StatusUnauthorized)
 		return
 	}
+	r.URL.Path = r.URL.Path[5:]
+	ctx := context.Background()
+	dbRunner := db.CreateRunner(db.Handle)
+	ctx = context.WithValue(ctx, db.RunnerKey, dbRunner)
+	response, err := handle(ctx, r)
+	var httpResponseStatus int
+	if err == nil {
+		httpResponseStatus = http.StatusOK
+	} else {
+		switch err {
+		case serverErr.ErrBadRequest:
+			httpResponseStatus = http.StatusBadRequest
+		case serverErr.ErrNotAuthenticated:
+			httpResponseStatus = http.StatusUnauthorized
+		case serverErr.ErrForbidden:
+			httpResponseStatus = http.StatusForbidden
+		case serverErr.ErrInvalidAPICall, serverErr.ErrResourceNotFound:
+			httpResponseStatus = http.StatusNotFound
+		case serverErr.ErrMethodNotAllowed:
+			httpResponseStatus = http.StatusMethodNotAllowed
+		default:
+			httpResponseStatus = http.StatusInternalServerError
+		}
+	}
 
-	handle(w, r)
-
+	// Write response.
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(httpResponseStatus)
+	json.NewEncoder(w).Encode(response)
 }
 
-func handle(w http.ResponseWriter, r *http.Request) {
+func handle(ctx context.Context, r *http.Request) (response interface{}, err error) {
+	if strings.HasPrefix(r.URL.Path, "/admin") {
+		session, _ := store.Get(r, "cookie-name")
+		if session.Values["user"].(dto.Authorization).Role != enum.RoleAdmin {
+			err = serverErr.ErrNotAuthenticated
+			return
+		}
+		r.URL.Path = r.URL.Path[6:]
+		response, err = handleAdmin(ctx, r)
+		return
+	}
+	if strings.HasPrefix(r.URL.Path, "/doctor") {
+		session, _ := store.Get(r, "cookie-name")
+		if session.Values["user"].(dto.Authorization).Role != enum.RoleDoctor {
+			err = serverErr.ErrNotAuthenticated
+			return
+		}
+		r.URL.Path = r.URL.Path[7:]
+		response, err = handleDoctor(ctx, r)
+		return
+	}
+	if strings.HasPrefix(r.URL.Path, "/research") {
+		session, _ := store.Get(r, "cookie-name")
+		if session.Values["user"].(dto.Authorization).Role != enum.RoleDoctor {
+			err = serverErr.ErrNotAuthenticated
+			return
+		}
+		r.URL.Path = r.URL.Path[9:]
+		response, err = handleResearcher(ctx, r)
+		return
+	}
+	if strings.HasPrefix(r.URL.Path, "/nurse") {
+		session, _ := store.Get(r, "cookie-name")
+		if session.Values["user"].(dto.Authorization).Role != enum.RoleNurse {
+			err = serverErr.ErrNotAuthenticated
+			return
+		}
+		r.URL.Path = r.URL.Path[6:]
+		response, err = handleNurse(ctx, r)
+		return
+	}
+	err = serverErr.ErrInvalidAPICall
 	return
 }
 
@@ -51,6 +122,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 	type loginResponse struct {
 		Authenticated bool
+		Role          enum.Role
 	}
 	request := &loginRequest{}
 	response := &loginResponse{}
@@ -78,6 +150,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 	}
 	response.Authenticated = true
+	response.Role = user.Role
 	buf := make([]byte, 0, 1000)
 	responsew := bytes.NewBuffer(buf)
 	json.NewEncoder(responsew).Encode(response)
