@@ -35,7 +35,7 @@ CREATE TABLE person (
 	surname text NOT NULL,
 	JMBG text NOT NULL,
 	date_of_birth date,
-	adress text,
+	address text,
 	email text,
 	CONSTRAINT person_uid_pkey PRIMARY KEY (uid)
 );
