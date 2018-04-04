@@ -68,7 +68,7 @@ func getPerson(ctx context.Context, personUID string) (person *dto.GetPersonResp
 	d := ctx.Value(db.RunnerKey).(db.Runner)
 
 	query := `select 
-				uid as UID,
+				uid as "UID",
 				name as "Name",
 				surname as "Surname",
 				jmbg as "JMBG",
@@ -102,7 +102,7 @@ func getPersons(ctx context.Context, name, surname string) (persons *dto.GetPers
 	name = "%" + name + "%"
 	surname = "%" + surname + "%"
 	query := `select 
-				uid as UID,
+				uid as "UID",
 				name as "Name",
 				surname as "Surname",
 				jmbg as "JMBG",

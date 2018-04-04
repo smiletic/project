@@ -27,6 +27,7 @@ type UpdatePersonRequest struct {
 }
 
 type GetPersonResponse struct {
+	UID         string `json:"Uid"`
 	Name        string
 	Surname     string
 	JMBG        string

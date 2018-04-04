@@ -26,11 +26,19 @@ func handleAdmin(ctx context.Context, r *http.Request) (response interface{}, er
 		}
 	}
 	if strings.HasPrefix(r.URL.Path, "/employee") {
+		r.URL.Path = r.URL.Path[9:]
 		switch r.Method {
 		case http.MethodPost:
+			return core.CreateEmployee(ctx, r.Body)
 		case http.MethodPatch:
+			return nil, core.UpdateEmployee(ctx, r.URL.Path[1:], r.Body)
 		case http.MethodGet:
+			if strings.HasPrefix(r.URL.Path, "/") {
+				return core.GetEmployee(ctx, r.URL.Path[1:])
+			}
+			return core.GetEmployees(ctx)
 		case http.MethodDelete:
+			return nil, core.RemoveEmployee(ctx, r.URL.Path[1:])
 		}
 	}
 	if strings.HasPrefix(r.URL.Path, "/user") {
