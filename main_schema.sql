@@ -62,6 +62,7 @@ CREATE TABLE employee (
     uid uuid NOT NULL DEFAULT uuid_generate_v1(),
 	person_uid uuid NOT NULL,
 	work_document_id text NOT NULL,
+	role_id int,
 	CONSTRAINT employee_uid_pkey PRIMARY KEY (uid),
 	CONSTRAINT fk_person FOREIGN KEY (person_uid)
 		REFERENCES person (uid) MATCH SIMPLE

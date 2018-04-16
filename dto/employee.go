@@ -7,6 +7,7 @@ type CreateEmployeeResponse struct {
 type CreateEmployeeRequest struct {
 	PersonUID      string `json:"PersonUid"`
 	WorkDocumentID string `json:"WorkDocumentId"`
+	RoleID         int    `json:"RoleId"`
 }
 
 type UpdateEmployeeRequest struct {
@@ -19,6 +20,7 @@ type GetEmployeeResponse struct {
 	PersonName     string
 	PersonSurname  string
 	WorkDocumentID string `json:"WorkDocumentId"`
+	RoleID         int    `json:"RoleId"`
 }
 
 type GetEmployeesResponse struct {

@@ -107,7 +107,8 @@ func getEmployeesByName(ctx context.Context, name, surname string) (employees *d
 				e.person_uid as "PersonUID",
 				pe.name as "PersonName",
 				pe.surname as "PersonSurname",
-				e.work_document_id as "WorkDocumentID"
+				e.work_document_id as "WorkDocumentID",
+				e.role_id as "RoleID"
 				from employee e
 				join person pe on (e.person_uid = pe.uid)
 				where pe.name ilike $1
@@ -142,7 +143,8 @@ func getEmployeesByWorkDocumentID(ctx context.Context, workDocID string) (employ
 				e.person_uid as "PersonUID",
 				pe.name as "PersonName",
 				pe.surname as "PersonSurname",
-				e.work_document_id as "WorkDocumentID"
+				e.work_document_id as "WorkDocumentID",
+				e.role_id as "RoleID"
 				from employee e
 				join person pe on (e.person_uid = pe.uid)
 				where e.work_document_id ilike $1`
