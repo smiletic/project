@@ -8,6 +8,7 @@ import (
 	"masterRad/data"
 	"masterRad/dto"
 	"masterRad/serverErr"
+	"net/url"
 )
 
 var (
@@ -79,13 +80,26 @@ func getEmployee(ctx context.Context, employeeUID string) (response *dto.GetEmpl
 	return
 }
 
-func getEmployees(ctx context.Context) (response *dto.GetEmployeesResponse, err error) {
-	response, err = data.GetEmployees(ctx)
-	if err != nil {
-		fmt.Println(err)
-		err = serverErr.ErrInternal
+func getEmployees(ctx context.Context, queryParams url.Values) (response *dto.GetEmployeesResponse, err error) {
+	name := queryParams.Get("Name")
+	surname := queryParams.Get("Surname")
+	if name != "" || surname != "" {
+		response, err = data.GetEmployeesByName(ctx, name, surname)
+		if err != nil {
+			fmt.Println(err)
+			err = serverErr.ErrInternal
+		}
 		return
 	}
-
+	workDocumentID := queryParams.Get("WorkDocumentId")
+	if workDocumentID != "" {
+		response, err = data.GetEmployeesByWorkDocumentID(ctx, workDocumentID)
+		if err != nil {
+			fmt.Println(err)
+			err = serverErr.ErrInternal
+		}
+		return
+	}
 	return
+
 }

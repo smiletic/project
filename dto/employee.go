@@ -16,6 +16,8 @@ type UpdateEmployeeRequest struct {
 type GetEmployeeResponse struct {
 	UID            string `json:"Uid"`
 	PersonUID      string `json:"PersonUid"`
+	PersonName     string
+	PersonSurname  string
 	WorkDocumentID string `json:"WorkDocumentId"`
 }
 
