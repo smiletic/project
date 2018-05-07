@@ -7,23 +7,22 @@ import (
 )
 
 var (
-	CreateEmployee               = createEmployee
-	UpdateEmployee               = updateEmployee
-	DeleteEmployee               = deleteEmployee
-	GetEmployee                  = getEmployee
-	GetEmployeesByName           = getEmployeesByName
-	GetEmployeesByWorkDocumentID = getEmployeesByWorkDocumentID
+	CreateEmployee = createEmployee
+	UpdateEmployee = updateEmployee
+	DeleteEmployee = deleteEmployee
+	GetEmployee    = getEmployee
+	GetEmployees   = getEmployees
 )
 
 func createEmployee(ctx context.Context, request *dto.CreateEmployeeRequest) (uid string, err error) {
 	d := ctx.Value(db.RunnerKey).(db.Runner)
 
 	query := `insert into employee 
-				(person_uid, work_document_id) 
-				values ($1, $2)
+				(person_uid, work_document_id,role_id) 
+				values ($1, $2,$3)
 				returning uid`
 
-	rows, err := d.Query(ctx, query, request.PersonUID, request.WorkDocumentID)
+	rows, err := d.Query(ctx, query, request.PersonUID, request.WorkDocumentID, request.RoleID)
 	if err != nil {
 		return
 	}
@@ -70,10 +69,14 @@ func getEmployee(ctx context.Context, employeeUID string) (employee *dto.GetEmpl
 
 	query := `select 
 				e.uid as "UID",
-				e.person_uid as "PersonUID",
-				pe.name as "PersonName",
-				pe.surname as "PersonSurname",
-				e.work_document_id as "WorkDocumentID"
+				pe.name as "Name",
+				pe.surname as "Surname",
+				pe.jmbg as "JMBG",
+				pe.address as "Address",
+				pe.email as "Email",
+				pe.date_of_birth as "DateOfBirth",
+				e.work_document_id as "WorkDocumentID",
+				e.role_id as "RoleID"
 				from employee e
 				join person pe on (e.person_uid = pe.uid) 
 				where e.uid = $1`
@@ -98,23 +101,18 @@ func getEmployee(ctx context.Context, employeeUID string) (employee *dto.GetEmpl
 	return
 }
 
-func getEmployeesByName(ctx context.Context, name, surname string) (employees *dto.GetEmployeesResponse, err error) {
+func getEmployees(ctx context.Context) (employees *dto.GetEmployeesResponse, err error) {
 	d := ctx.Value(db.RunnerKey).(db.Runner)
-	name = "%" + name + "%"
-	surname = "%" + surname + "%"
 	query := `select 
 				e.uid as "UID",
-				e.person_uid as "PersonUID",
-				pe.name as "PersonName",
-				pe.surname as "PersonSurname",
+				pe.name as "Name",
+				pe.surname as "Surname",
 				e.work_document_id as "WorkDocumentID",
 				e.role_id as "RoleID"
 				from employee e
-				join person pe on (e.person_uid = pe.uid)
-				where pe.name ilike $1
-				and pe.surname ilike $2`
+				join person pe on (e.person_uid = pe.uid)`
 
-	rows, err := d.Query(ctx, query, name, surname)
+	rows, err := d.Query(ctx, query)
 	if err != nil {
 		return
 	}
@@ -126,42 +124,7 @@ func getEmployeesByName(ctx context.Context, name, surname string) (employees *d
 	}
 	employees = &dto.GetEmployeesResponse{}
 	for rr.ScanNext() {
-		employee := &dto.GetEmployeeResponse{}
-		rr.ReadAllToStruct(employee)
-		employees.Employees = append(employees.Employees, employee)
-	}
-	err = rr.Error()
-	return
-}
-
-func getEmployeesByWorkDocumentID(ctx context.Context, workDocID string) (employees *dto.GetEmployeesResponse, err error) {
-	d := ctx.Value(db.RunnerKey).(db.Runner)
-	workDocID = "%" + workDocID + "%"
-
-	query := `select 
-				e.uid as "UID",
-				e.person_uid as "PersonUID",
-				pe.name as "PersonName",
-				pe.surname as "PersonSurname",
-				e.work_document_id as "WorkDocumentID",
-				e.role_id as "RoleID"
-				from employee e
-				join person pe on (e.person_uid = pe.uid)
-				where e.work_document_id ilike $1`
-
-	rows, err := d.Query(ctx, query, workDocID)
-	if err != nil {
-		return
-	}
-	defer rows.Close()
-
-	rr, err := db.GetRowReader(rows)
-	if err != nil {
-		return
-	}
-	employees = &dto.GetEmployeesResponse{}
-	for rr.ScanNext() {
-		employee := &dto.GetEmployeeResponse{}
+		employee := &dto.EmployeeBasicInfo{}
 		rr.ReadAllToStruct(employee)
 		employees.Employees = append(employees.Employees, employee)
 	}

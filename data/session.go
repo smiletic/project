@@ -37,7 +37,7 @@ func login(ctx context.Context, name, passhash string) (autorizacija *dto.Author
 	if rr.ScanNext() {
 		autorizacija = &dto.Authorization{}
 
-		autorizacija.User_UID = rr.ReadByIdxString(0)
+		autorizacija.UserUID = rr.ReadByIdxString(0)
 		autorizacija.Role = enum.Role(rr.ReadByIdxInt64(1))
 		autorizacija.Username = rr.ReadByIdxString(2)
 	}

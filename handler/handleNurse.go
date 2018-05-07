@@ -20,7 +20,7 @@ func handleNurse(ctx context.Context, r *http.Request) (response interface{}, er
 			if strings.HasPrefix(r.URL.Path, "/") {
 				return core.GetPerson(ctx, r.URL.Path[1:])
 			}
-			return core.GetPersons(ctx, r.URL.Query())
+			return core.GetPersons(ctx)
 		case http.MethodDelete:
 			return nil, core.RemovePerson(ctx, r.URL.Path[1:])
 		}

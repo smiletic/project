@@ -8,7 +8,6 @@ import (
 	"masterRad/data"
 	"masterRad/dto"
 	"masterRad/serverErr"
-	"net/url"
 )
 
 var (
@@ -27,6 +26,16 @@ func createEmployee(ctx context.Context, requestBody io.Reader) (response *dto.C
 		fmt.Println(err)
 		err = serverErr.ErrBadRequest
 		return
+	}
+	if request.PersonUID == "" {
+		createPersonRequest := &dto.CreatePersonRequest{Address: request.Address, DateOfBirth: request.DateOfBirth, Email: request.Email, JMBG: request.JMBG, Name: request.Name, Surname: request.Surname}
+		uid, err1 := data.CreatePerson(ctx, createPersonRequest)
+		if err1 != nil {
+			err = err1
+			fmt.Println(err)
+			return
+		}
+		request.PersonUID = uid
 	}
 
 	uid, err := data.CreateEmployee(ctx, request)
@@ -48,7 +57,12 @@ func updateEmployee(ctx context.Context, employeeUID string, requestBody io.Read
 		err = serverErr.ErrBadRequest
 		return
 	}
-
+	updatePerson := &dto.UpdatePersonRequest{Name: request.Name, Surname: request.Surname, JMBG: request.JMBG, Email: request.Email, Address: request.Address, DateOfBirth: request.DateOfBirth}
+	err = data.UpdatePersonForEmployee(ctx, employeeUID, updatePerson)
+	if err != nil {
+		fmt.Println(err)
+		err = serverErr.ErrInternal
+	}
 	err = data.UpdateEmployee(ctx, employeeUID, request)
 	if err != nil {
 		fmt.Println(err)
@@ -80,26 +94,11 @@ func getEmployee(ctx context.Context, employeeUID string) (response *dto.GetEmpl
 	return
 }
 
-func getEmployees(ctx context.Context, queryParams url.Values) (response *dto.GetEmployeesResponse, err error) {
-	name := queryParams.Get("Name")
-	surname := queryParams.Get("Surname")
-	if name != "" || surname != "" {
-		response, err = data.GetEmployeesByName(ctx, name, surname)
-		if err != nil {
-			fmt.Println(err)
-			err = serverErr.ErrInternal
-		}
-		return
-	}
-	workDocumentID := queryParams.Get("WorkDocumentId")
-	if workDocumentID != "" {
-		response, err = data.GetEmployeesByWorkDocumentID(ctx, workDocumentID)
-		if err != nil {
-			fmt.Println(err)
-			err = serverErr.ErrInternal
-		}
-		return
+func getEmployees(ctx context.Context) (response *dto.GetEmployeesResponse, err error) {
+	response, err = data.GetEmployees(ctx)
+	if err != nil {
+		fmt.Println(err)
+		err = serverErr.ErrInternal
 	}
 	return
-
 }

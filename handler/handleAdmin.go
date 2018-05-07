@@ -20,7 +20,7 @@ func handleAdmin(ctx context.Context, r *http.Request) (response interface{}, er
 			if strings.HasPrefix(r.URL.Path, "/") {
 				return core.GetPerson(ctx, r.URL.Path[1:])
 			}
-			return core.GetPersons(ctx, r.URL.Query())
+			return core.GetPersons(ctx)
 		case http.MethodDelete:
 			return nil, core.RemovePerson(ctx, r.URL.Path[1:])
 		}
@@ -36,7 +36,7 @@ func handleAdmin(ctx context.Context, r *http.Request) (response interface{}, er
 			if strings.HasPrefix(r.URL.Path, "/") {
 				return core.GetEmployee(ctx, r.URL.Path[1:])
 			}
-			return core.GetEmployees(ctx, r.URL.Query())
+			return core.GetEmployees(ctx)
 		case http.MethodDelete:
 			return nil, core.RemoveEmployee(ctx, r.URL.Path[1:])
 		}

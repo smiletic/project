@@ -3,7 +3,7 @@ package dto
 import "masterRad/enum"
 
 type Authorization struct {
-	User_UID string
+	UserUID  string
 	Username string
 	Role     enum.Role
 }

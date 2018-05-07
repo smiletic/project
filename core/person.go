@@ -8,7 +8,6 @@ import (
 	"masterRad/data"
 	"masterRad/dto"
 	"masterRad/serverErr"
-	"net/url"
 )
 
 var (
@@ -80,11 +79,8 @@ func getPerson(ctx context.Context, personUID string) (response *dto.GetPersonRe
 	return
 }
 
-func getPersons(ctx context.Context, queryParams url.Values) (response *dto.GetPersonsResponse, err error) {
-	name := queryParams.Get("Name")
-	surname := queryParams.Get("Surname")
-
-	response, err = data.GetPersons(ctx, name, surname)
+func getPersons(ctx context.Context) (response *dto.GetPersonsResponse, err error) {
+	response, err = data.GetPersons(ctx)
 	if err != nil {
 		fmt.Println(err)
 		err = serverErr.ErrInternal

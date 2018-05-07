@@ -22,6 +22,7 @@ DROP TABLE IF EXISTS
 	patient,
 	doctor,
 	administrator,
+	nurse,
 	role,
 	specialty,
 	system_user,

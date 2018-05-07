@@ -87,7 +87,7 @@ func handle(ctx context.Context, r *http.Request) (response interface{}, err err
 	}
 	if strings.HasPrefix(r.URL.Path, "/research") {
 		session, _ := store.Get(r, "cookie-name")
-		if session.Values["user"].(dto.Authorization).Role != enum.RoleDoctor {
+		if session.Values["user"].(dto.Authorization).Role != enum.RoleResearch {
 			err = serverErr.ErrNotAuthenticated
 			return
 		}
@@ -103,6 +103,13 @@ func handle(ctx context.Context, r *http.Request) (response interface{}, err err
 		}
 		r.URL.Path = r.URL.Path[6:]
 		response, err = handleNurse(ctx, r)
+		return
+	}
+	if strings.HasPrefix(r.URL.Path, "/pass") {
+		session, _ := store.Get(r, "cookie-name")
+		r.URL.Path = r.URL.Path[5:]
+		userUID := session.Values["user"].(dto.Authorization).UserUID
+		response, err = handlePassChange(ctx, r, userUID)
 		return
 	}
 	err = serverErr.ErrInvalidAPICall
@@ -121,6 +128,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type loginResponse struct {
+		Username      string
 		Authenticated bool
 		Role          enum.Role
 	}
@@ -151,6 +159,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	}
 	response.Authenticated = true
 	response.Role = user.Role
+	response.Username = request.Username
 	buf := make([]byte, 0, 1000)
 	responsew := bytes.NewBuffer(buf)
 	json.NewEncoder(responsew).Encode(response)

@@ -7,11 +7,12 @@ import (
 )
 
 var (
-	CreatePerson = createPerson
-	UpdatePerson = updatePerson
-	DeletePerson = deletePerson
-	GetPerson    = getPerson
-	GetPersons   = getPersons
+	CreatePerson            = createPerson
+	UpdatePerson            = updatePerson
+	UpdatePersonForEmployee = updatePersonForEmployee
+	DeletePerson            = deletePerson
+	GetPerson               = getPerson
+	GetPersons              = getPersons
 )
 
 func createPerson(ctx context.Context, request *dto.CreatePersonRequest) (uid string, err error) {
@@ -53,6 +54,18 @@ func updatePerson(ctx context.Context, personUID string, request *dto.UpdatePers
 	return
 }
 
+func updatePersonForEmployee(ctx context.Context, employeeUID string, request *dto.UpdatePersonRequest) (err error) {
+	d := ctx.Value(db.RunnerKey).(db.Runner)
+
+	query := `update person set
+				name = $1, surname = $2, JMBG = $3, date_of_birth = $4, address = $5, email = $6
+				where uid = (select person_uid from employee where uid = $7 limit 1)`
+
+	_, err = d.Exec(ctx, query, request.Name, request.Surname, request.JMBG, request.DateOfBirth, request.Address, request.Email, employeeUID)
+
+	return
+}
+
 func deletePerson(ctx context.Context, personUID string) (err error) {
 	d := ctx.Value(db.RunnerKey).(db.Runner)
 
@@ -73,7 +86,8 @@ func getPerson(ctx context.Context, personUID string) (person *dto.GetPersonResp
 				surname as "Surname",
 				jmbg as "JMBG",
 				address as "Address",
-				email as "Email"
+				email as "Email",
+				date_of_birth as "DateOfBirth"
 	 			from person 
 				where uid = $1`
 
@@ -97,10 +111,8 @@ func getPerson(ctx context.Context, personUID string) (person *dto.GetPersonResp
 	return
 }
 
-func getPersons(ctx context.Context, name, surname string) (persons *dto.GetPersonsResponse, err error) {
+func getPersons(ctx context.Context) (persons *dto.GetPersonsResponse, err error) {
 	d := ctx.Value(db.RunnerKey).(db.Runner)
-	name = "%" + name + "%"
-	surname = "%" + surname + "%"
 	query := `select 
 				uid as "UID",
 				name as "Name",
@@ -108,11 +120,9 @@ func getPersons(ctx context.Context, name, surname string) (persons *dto.GetPers
 				jmbg as "JMBG",
 				address as "Address",
 				email as "Email"
-	 			from person 
-				where name ilike $1
-				and surname ilike $2`
+	 			from person`
 
-	rows, err := d.Query(ctx, query, name, surname)
+	rows, err := d.Query(ctx, query)
 	if err != nil {
 		return
 	}
