@@ -42,11 +42,20 @@ func handleAdmin(ctx context.Context, r *http.Request) (response interface{}, er
 		}
 	}
 	if strings.HasPrefix(r.URL.Path, "/user") {
+		r.URL.Path = r.URL.Path[5:]
+
 		switch r.Method {
 		case http.MethodPost:
+			return core.CreateUser(ctx, r.Body)
 		case http.MethodPatch:
+			return nil, core.UpdateUser(ctx, r.URL.Path[1:], r.Body)
 		case http.MethodGet:
+			if strings.HasPrefix(r.URL.Path, "/") {
+				return core.GetUser(ctx, r.URL.Path[1:])
+			}
+			return core.GetUsers(ctx)
 		case http.MethodDelete:
+			return nil, core.RemoveUser(ctx, r.URL.Path[1:])
 		}
 	}
 

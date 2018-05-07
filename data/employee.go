@@ -7,11 +7,12 @@ import (
 )
 
 var (
-	CreateEmployee = createEmployee
-	UpdateEmployee = updateEmployee
-	DeleteEmployee = deleteEmployee
-	GetEmployee    = getEmployee
-	GetEmployees   = getEmployees
+	CreateEmployee        = createEmployee
+	UpdateEmployee        = updateEmployee
+	UpdateEmployeeForUser = updateEmployeeForUser
+	DeleteEmployee        = deleteEmployee
+	GetEmployee           = getEmployee
+	GetEmployees          = getEmployees
 )
 
 func createEmployee(ctx context.Context, request *dto.CreateEmployeeRequest) (uid string, err error) {
@@ -128,6 +129,33 @@ func getEmployees(ctx context.Context) (employees *dto.GetEmployeesResponse, err
 		rr.ReadAllToStruct(employee)
 		employees.Employees = append(employees.Employees, employee)
 	}
+	err = rr.Error()
+	return
+}
+
+func updateEmployeeForUser(ctx context.Context, userUID string, request *dto.UpdateEmployeeRequest) (uid string, err error) {
+	d := ctx.Value(db.RunnerKey).(db.Runner)
+
+	query := `update employee set
+				work_document_id = $1
+				where uid = (select employee_uid from user where uid = $2 limit 1)
+				returning uid`
+
+	rows, err := d.Query(ctx, query, request.WorkDocumentID, userUID)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+
+	rr, err := db.GetRowReader(rows)
+	if err != nil {
+		return
+	}
+
+	if rr.ScanNext() {
+		uid = rr.ReadByIdxString(0)
+	}
+
 	err = rr.Error()
 	return
 }
