@@ -9,13 +9,25 @@ type CreatePatientResponse struct {
 }
 
 type CreatePatientRequest struct {
-	PersonUID            string    `json:"PersonUid"`
+	PersonUID            string `json:"PersonUid"`
+	Name                 string
+	Surname              string
+	JMBG                 string
+	DateOfBirth          time.Time `json:",string"`
+	Address              string
+	Email                string
 	MedicalRecordID      string    `json:"MedicalRecordId"`
 	HealthCardID         string    `json:"HealthCardId"`
 	HealthCardValidUntil time.Time `json:",string"`
 }
 
 type UpdatePatientRequest struct {
+	Name                 string
+	Surname              string
+	JMBG                 string
+	DateOfBirth          time.Time `json:",string"`
+	Address              string
+	Email                string
 	MedicalRecordID      string    `json:"MedicalRecordId"`
 	HealthCardID         string    `json:"HealthCardId"`
 	HealthCardValidUntil time.Time `json:",string"`
@@ -23,14 +35,26 @@ type UpdatePatientRequest struct {
 
 type GetPatientResponse struct {
 	UID                  string `json:"Uid"`
-	PersonUID            string `json:"PersonUid"`
-	PersonName           string
-	PersonSurname        string
+	Name                 string
+	Surname              string
+	JMBG                 string
+	DateOfBirth          time.Time `json:",string"`
+	Address              string
+	Email                string
+	MedicalRecordID      string    `json:"MedicalRecordId"`
+	HealthCardID         string    `json:"HealthCardId"`
+	HealthCardValidUntil time.Time `json:",string"`
+}
+
+type PatientBasicInfo struct {
+	UID                  string `json:"Uid"`
+	Name                 string
+	Surname              string
 	MedicalRecordID      string    `json:"MedicalRecordId"`
 	HealthCardID         string    `json:"HealthCardId"`
 	HealthCardValidUntil time.Time `json:",string"`
 }
 
 type GetPatientsResponse struct {
-	Patients []*GetPatientResponse
+	Patients []*PatientBasicInfo
 }

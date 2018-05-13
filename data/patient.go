@@ -7,12 +7,11 @@ import (
 )
 
 var (
-	CreatePatient              = createPatient
-	UpdatePatient              = updatePatient
-	DeletePatient              = deletePatient
-	GetPatient                 = getPatient
-	GetPatientsByName          = getPatientsByName
-	GetPatientsByHealthDocUIDs = getPatientsByHealthDocUIDs
+	CreatePatient = createPatient
+	UpdatePatient = updatePatient
+	DeletePatient = deletePatient
+	GetPatient    = getPatient
+	GetPatients   = getPatients
 )
 
 func createPatient(ctx context.Context, request *dto.CreatePatientRequest) (uid string, err error) {
@@ -100,10 +99,8 @@ func getPatient(ctx context.Context, patientUID string) (patient *dto.GetPatient
 	return
 }
 
-func getPatientsByName(ctx context.Context, name, surname string) (patients *dto.GetPatientsResponse, err error) {
+func getPatients(ctx context.Context) (patients *dto.GetPatientsResponse, err error) {
 	d := ctx.Value(db.RunnerKey).(db.Runner)
-	name = "%" + name + "%"
-	surname = "%" + surname + "%"
 	query := `select 
 				p.uid as "UID",
 				p.person_uid as "PersonUID",
@@ -113,11 +110,9 @@ func getPatientsByName(ctx context.Context, name, surname string) (patients *dto
 				p.health_card_id as "HealthCardID",
 				p.health_card_valid_until as "HealthCardValidUntil"
 				from patient p 
-				join person pe on (p.person_uid = pe.uid) 
-				where pe.name ilike $1
-				and pe.surname ilike $2`
+				join person pe on (p.person_uid = pe.uid)`
 
-	rows, err := d.Query(ctx, query, name, surname)
+	rows, err := d.Query(ctx, query)
 	if err != nil {
 		return
 	}
@@ -129,44 +124,7 @@ func getPatientsByName(ctx context.Context, name, surname string) (patients *dto
 	}
 	patients = &dto.GetPatientsResponse{}
 	for rr.ScanNext() {
-		patient := &dto.GetPatientResponse{}
-		rr.ReadAllToStruct(patient)
-		patients.Patients = append(patients.Patients, patient)
-	}
-	err = rr.Error()
-	return
-}
-
-func getPatientsByHealthDocUIDs(ctx context.Context, medicalRecordID, healthCardID string) (patients *dto.GetPatientsResponse, err error) {
-	d := ctx.Value(db.RunnerKey).(db.Runner)
-	medicalRecordID = "%" + medicalRecordID + "%"
-	healthCardID = "%" + healthCardID + "%"
-	query := `select 
-				p.uid as "UID",
-				p.person_uid as "PersonUID",
-				pe.name as "PersonName",
-				pe.surname as "PersonSurname",
-				p.medical_record_id as "MedicalRecordID",
-				p.health_card_id as "HealthCardID",
-				p.health_card_valid_until as "HealthCardValidUntil"
-				from patient p 
-				join person pe on (p.person_uid = pe.uid) 
-				where p.medical_record_id ilike $1
-				and p.health_card_id ilike $2`
-
-	rows, err := d.Query(ctx, query, medicalRecordID, healthCardID)
-	if err != nil {
-		return
-	}
-	defer rows.Close()
-
-	rr, err := db.GetRowReader(rows)
-	if err != nil {
-		return
-	}
-	patients = &dto.GetPatientsResponse{}
-	for rr.ScanNext() {
-		patient := &dto.GetPatientResponse{}
+		patient := &dto.PatientBasicInfo{}
 		rr.ReadAllToStruct(patient)
 		patients.Patients = append(patients.Patients, patient)
 	}

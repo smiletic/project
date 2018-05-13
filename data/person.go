@@ -10,6 +10,7 @@ var (
 	CreatePerson            = createPerson
 	UpdatePerson            = updatePerson
 	UpdatePersonForEmployee = updatePersonForEmployee
+	UpdatePersonForPatient  = updatePersonForPatient
 	DeletePerson            = deletePerson
 	GetPerson               = getPerson
 	GetPersons              = getPersons
@@ -62,6 +63,18 @@ func updatePersonForEmployee(ctx context.Context, employeeUID string, request *d
 				where uid = (select person_uid from employee where uid = $7 limit 1)`
 
 	_, err = d.Exec(ctx, query, request.Name, request.Surname, request.JMBG, request.DateOfBirth, request.Address, request.Email, employeeUID)
+
+	return
+}
+
+func updatePersonForPatient(ctx context.Context, patientUID string, request *dto.UpdatePersonRequest) (err error) {
+	d := ctx.Value(db.RunnerKey).(db.Runner)
+
+	query := `update person set
+				name = $1, surname = $2, JMBG = $3, date_of_birth = $4, address = $5, email = $6
+				where uid = (select person_uid from patient where uid = $7 limit 1)`
+
+	_, err = d.Exec(ctx, query, request.Name, request.Surname, request.JMBG, request.DateOfBirth, request.Address, request.Email, patientUID)
 
 	return
 }

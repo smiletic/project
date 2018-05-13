@@ -8,7 +8,6 @@ import (
 	"masterRad/data"
 	"masterRad/dto"
 	"masterRad/serverErr"
-	"net/url"
 )
 
 var (
@@ -27,6 +26,16 @@ func createPatient(ctx context.Context, requestBody io.Reader) (response *dto.Cr
 		fmt.Println(err)
 		err = serverErr.ErrBadRequest
 		return
+	}
+	if request.PersonUID == "" {
+		createPersonRequest := &dto.CreatePersonRequest{Address: request.Address, DateOfBirth: request.DateOfBirth, Email: request.Email, JMBG: request.JMBG, Name: request.Name, Surname: request.Surname}
+		uid, err1 := data.CreatePerson(ctx, createPersonRequest)
+		if err1 != nil {
+			err = err1
+			fmt.Println(err)
+			return
+		}
+		request.PersonUID = uid
 	}
 
 	uid, err := data.CreatePatient(ctx, request)
@@ -48,7 +57,12 @@ func updatePatient(ctx context.Context, patientUID string, requestBody io.Reader
 		err = serverErr.ErrBadRequest
 		return
 	}
-
+	updatePerson := &dto.UpdatePersonRequest{Name: request.Name, Surname: request.Surname, JMBG: request.JMBG, Email: request.Email, Address: request.Address, DateOfBirth: request.DateOfBirth}
+	err = data.UpdatePersonForPatient(ctx, patientUID, updatePerson)
+	if err != nil {
+		fmt.Println(err)
+		err = serverErr.ErrInternal
+	}
 	err = data.UpdatePatient(ctx, patientUID, request)
 	if err != nil {
 		fmt.Println(err)
@@ -80,26 +94,11 @@ func getPatient(ctx context.Context, patientUID string) (response *dto.GetPatien
 	return
 }
 
-func getPatients(ctx context.Context, queryParams url.Values) (response *dto.GetPatientsResponse, err error) {
-	name := queryParams.Get("Name")
-	surname := queryParams.Get("Surname")
-	if name != "" || surname != "" {
-		response, err = data.GetPatientsByName(ctx, name, surname)
-		if err != nil {
-			fmt.Println(err)
-			err = serverErr.ErrInternal
-		}
-		return
-	}
-	medicalRecordUID := queryParams.Get("MedicalRecordId")
-	healthCardUID := queryParams.Get("HealthCardId")
-	if medicalRecordUID != "" || healthCardUID != "" {
-		response, err = data.GetPatientsByHealthDocUIDs(ctx, medicalRecordUID, healthCardUID)
-		if err != nil {
-			fmt.Println(err)
-			err = serverErr.ErrInternal
-		}
-		return
+func getPatients(ctx context.Context) (response *dto.GetPatientsResponse, err error) {
+	response, err = data.GetPatients(ctx)
+	if err != nil {
+		fmt.Println(err)
+		err = serverErr.ErrInternal
 	}
 	return
 }
