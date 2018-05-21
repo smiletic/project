@@ -11,3 +11,16 @@ connection = "postgres://postgres:postgres@localhost/postgres?sslmode=disable"
 max_idle_connections = 10
 max_open_connections = 50
 max_lifetime = "60s"
+
+[questions]
+start = "Pocetak"
+end = "Kraj"
+text = "Pitanje"
+type = "Tip"
+answers = "Odgovori"
+
+[question_type_names]
+free_text = "Tekst"
+free_numerical = "Broj"
+radio_group = "Radio"
+checkbox = "Checkbox"

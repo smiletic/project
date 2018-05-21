@@ -171,6 +171,7 @@ ALTER TABLE examination OWNER TO postgres;
 
 CREATE TABLE test (
     uid uuid NOT NULL DEFAULT uuid_generate_v1(),
+	name text NOT NULL,
 	specialty_id int NOT NULL,
 	questions jsonb NOT NULL,
 	CONSTRAINT test_uid_pkey PRIMARY KEY (uid),

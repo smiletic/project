@@ -30,6 +30,17 @@ var (
 	GetDatabaseMaxOpenConnections = getDatabaseMaxOpenConnections
 	// GetDatabaseConnectionMaxLifetime returns connection variable max_lifetime to be set.
 	GetDatabaseConnectionMaxLifetime = getDatabaseConnectionMaxLifetime
+
+	GetQuestionStartString   = getQuestionStartString
+	GetQuestionEndString     = getQuestionEndString
+	GetQuestionTypeString    = getQuestionTypeString
+	GetQuestionTextString    = getQuestionTextString
+	GetQuestionAnswersString = getQuestionAnswersString
+
+	GetQuestionTypeNamesFreeText      = getQuestionTypeNamesFreeText
+	GetQuestionTypeNamesFreeNumerical = getQuestionTypeNamesFreeNumerical
+	GetQuestionTypeNamesRadioGroup    = getQuestionTypeNamesRadioGroup
+	GetQuestionTypeNamesCheckbox      = getQuestionTypeNamesCheckbox
 )
 
 func isPropertySet(s string) bool {
@@ -74,4 +85,40 @@ func getDatabaseMaxOpenConnections() int {
 
 func getDatabaseConnectionMaxLifetime() time.Duration {
 	return viper.GetDuration("db.max_lifetime")
+}
+
+func getQuestionStartString() string {
+	return viper.GetString("questions.start")
+}
+
+func getQuestionEndString() string {
+	return viper.GetString("questions.end")
+}
+
+func getQuestionTypeString() string {
+	return viper.GetString("questions.type")
+}
+
+func getQuestionTextString() string {
+	return viper.GetString("questions.text")
+}
+
+func getQuestionAnswersString() string {
+	return viper.GetString("questions.answers")
+}
+
+func getQuestionTypeNamesFreeText() string {
+	return viper.GetString("question_type_names.free_text")
+}
+
+func getQuestionTypeNamesFreeNumerical() string {
+	return viper.GetString("question_type_names.free_numerical")
+}
+
+func getQuestionTypeNamesRadioGroup() string {
+	return viper.GetString("question_type_names.radio_group")
+}
+
+func getQuestionTypeNamesCheckbox() string {
+	return viper.GetString("question_type_names.checkbox")
 }
