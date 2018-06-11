@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"masterRad/data"
-	"masterRad/dto"
-	"masterRad/serverErr"
+	"projekat/data"
+	"projekat/dto"
+	"projekat/serverErr"
 )
 
 var (

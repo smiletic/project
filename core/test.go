@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"masterRad/data"
-	"masterRad/dto"
-	"masterRad/serverErr"
-	"masterRad/util"
 	"net/http"
 	"os"
+	"projekat/data"
+	"projekat/dto"
+	"projekat/serverErr"
+	"projekat/util"
 	"strconv"
 )
 

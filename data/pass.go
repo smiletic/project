@@ -2,7 +2,7 @@ package data
 
 import (
 	"context"
-	"masterRad/db"
+	"projekat/db"
 )
 
 var (

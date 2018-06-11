@@ -3,12 +3,12 @@ package main
 import (
 	"encoding/gob"
 	"fmt"
-	"masterRad/config"
-	"masterRad/dto"
-	"masterRad/handler"
-	"masterRad/server"
 	"math/rand"
 	"net/http"
+	"projekat/config"
+	"projekat/dto"
+	"projekat/handler"
+	"projekat/server"
 	"time"
 
 	"github.com/gorilla/context"

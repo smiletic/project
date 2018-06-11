@@ -2,9 +2,9 @@ package handler
 
 import (
 	"context"
-	"masterRad/core"
-	"masterRad/serverErr"
 	"net/http"
+	"projekat/core"
+	"projekat/serverErr"
 )
 
 func handlePassChange(ctx context.Context, r *http.Request, userUID string) (response interface{}, err error) {

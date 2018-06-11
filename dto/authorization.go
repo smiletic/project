@@ -1,6 +1,6 @@
 package dto
 
-import "masterRad/enum"
+import "projekat/enum"
 
 type Authorization struct {
 	UserUID  string

@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"masterRad/data"
-	"masterRad/dto"
-	"masterRad/serverErr"
-	"masterRad/util"
+	"projekat/data"
+	"projekat/dto"
+	"projekat/serverErr"
+	"projekat/util"
 )
 
 var (

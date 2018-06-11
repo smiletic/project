@@ -2,8 +2,8 @@ package data
 
 import (
 	"context"
-	"masterRad/db"
-	"masterRad/dto"
+	"projekat/db"
+	"projekat/dto"
 )
 
 var (

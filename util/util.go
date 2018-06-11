@@ -3,22 +3,30 @@ package util
 import (
 	"context"
 	"crypto/md5"
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
-	"masterRad/config"
-	"masterRad/data"
-	"masterRad/dto"
-	"masterRad/enum"
-	"masterRad/serverErr"
+	"projekat/config"
+	"projekat/data"
+	"projekat/dto"
+	"projekat/enum"
+	"projekat/serverErr"
 	"strings"
 
 	"github.com/tealeg/xlsx"
 )
 
 var (
-	Login      = login
-	GetMD5Hash = getMD5Hash
-	ParseFile  = parseFile
+	Login         = login
+	GetMD5Hash    = getMD5Hash
+	ParseFile     = parseFile
+	GenerateID    = generateID
+	CreateSession = createSession
+)
+
+var (
+	UserKey = "UserKey"
 )
 
 func login(ctx context.Context, name, pass string) (autorizacija *dto.Authorization, err error) {
@@ -31,6 +39,11 @@ func getMD5Hash(text string) string {
 	hasher.Write([]byte(text))
 	hash := hex.EncodeToString(hasher.Sum(nil))
 	return hash
+}
+
+func createSession(ctx context.Context, userUID string) (authToken string, err error) {
+	token := GenerateID()
+	return token, data.CreateSession(ctx, userUID, token)
 }
 
 func parseFile(ctx context.Context, filePath string) (parsedQuestions *dto.TestQuestions, err error) {
@@ -88,4 +101,14 @@ func typeCodeFromName(name string) (code enum.QuestionType) {
 		code = enum.QuestionTypeFreeText
 	}
 	return
+}
+
+func generateID() string {
+	raw := make([]byte, 18, 18)
+	enc := make([]byte, 24, 24)
+
+	rand.Read(raw)
+	base64.RawURLEncoding.Encode(enc, raw)
+
+	return string(enc)
 }

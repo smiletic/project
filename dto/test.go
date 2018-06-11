@@ -2,7 +2,7 @@ package dto
 
 import (
 	"encoding/json"
-	"masterRad/enum"
+	"projekat/enum"
 )
 
 type Question struct {

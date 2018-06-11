@@ -3,8 +3,8 @@ package server
 import (
 	"database/sql"
 	"fmt"
-	"masterRad/config"
-	"masterRad/db"
+	"projekat/config"
+	"projekat/db"
 
 	_ "github.com/lib/pq"
 )

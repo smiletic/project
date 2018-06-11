@@ -200,3 +200,14 @@ CREATE TABLE filled_test (
 );
 
 ALTER TABLE filled_test OWNER TO postgres;
+
+CREATE TABLE login_session (
+	system_user_uid uuid NOT NULL,
+	token text NOT NULL,
+	CONSTRAINT fk_system_user FOREIGN KEY (system_user_uid)
+		REFERENCES system_user (uid) MATCH SIMPLE
+		ON UPDATE NO ACTION
+		ON DELETE CASCADE
+);
+
+ALTER TABLE login_session OWNER TO postgres;

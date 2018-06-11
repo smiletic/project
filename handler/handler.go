@@ -5,12 +5,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"masterRad/db"
-	"masterRad/dto"
-	"masterRad/enum"
-	"masterRad/serverErr"
-	"masterRad/util"
 	"net/http"
+	"projekat/data"
+	"projekat/db"
+	"projekat/dto"
+	"projekat/enum"
+	"projekat/serverErr"
+	"projekat/util"
 	"strings"
 
 	"github.com/gorilla/sessions"
@@ -27,16 +28,37 @@ var (
 )
 
 func handleAuthorized(w http.ResponseWriter, r *http.Request) {
-	session, _ := store.Get(r, "cookie-name")
+	w.Header().Add("Content-Type", "application/json; charset=utf-8")
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+	w.Header().Add("Access-Control-Allow-Methods", "HEAD, GET, POST, PUT, DELETE, PATCH, OPTIONS")
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
 
-	if auth, ok := session.Values["user"]; !ok || auth == nil {
+	authorization := r.Header.Get("Authorization")
+	if authorization == "" {
 		http.Error(w, "Forbidden", http.StatusUnauthorized)
 		return
 	}
-	r.URL.Path = r.URL.Path[5:]
+
 	ctx := context.Background()
 	dbRunner := db.CreateRunner(db.Handle)
 	ctx = context.WithValue(ctx, db.RunnerKey, dbRunner)
+
+	user, err := data.GetSession(ctx, authorization)
+	if err != nil {
+		http.Error(w, "Internal", http.StatusInternalServerError)
+		return
+	}
+	if user == nil {
+		http.Error(w, "Forbidden", http.StatusUnauthorized)
+		return
+	}
+	ctx = context.WithValue(ctx, util.UserKey, user)
+
+	r.URL.Path = r.URL.Path[5:]
+
 	response, err := handle(ctx, r)
 	var httpResponseStatus int
 	if err == nil {
@@ -59,15 +81,15 @@ func handleAuthorized(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write response.
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+
 	w.WriteHeader(httpResponseStatus)
 	json.NewEncoder(w).Encode(response)
 }
 
 func handle(ctx context.Context, r *http.Request) (response interface{}, err error) {
 	if strings.HasPrefix(r.URL.Path, "/admin") {
-		session, _ := store.Get(r, "cookie-name")
-		if session.Values["user"].(dto.Authorization).Role != enum.RoleAdmin {
+		user := ctx.Value(util.UserKey).(*dto.Authorization)
+		if user.Role != enum.RoleAdmin {
 			err = serverErr.ErrNotAuthenticated
 			return
 		}
@@ -76,8 +98,8 @@ func handle(ctx context.Context, r *http.Request) (response interface{}, err err
 		return
 	}
 	if strings.HasPrefix(r.URL.Path, "/doctor") {
-		session, _ := store.Get(r, "cookie-name")
-		if session.Values["user"].(dto.Authorization).Role != enum.RoleDoctor {
+		user := ctx.Value(util.UserKey).(*dto.Authorization)
+		if user.Role != enum.RoleDoctor {
 			err = serverErr.ErrNotAuthenticated
 			return
 		}
@@ -86,8 +108,8 @@ func handle(ctx context.Context, r *http.Request) (response interface{}, err err
 		return
 	}
 	if strings.HasPrefix(r.URL.Path, "/research") {
-		session, _ := store.Get(r, "cookie-name")
-		if session.Values["user"].(dto.Authorization).Role != enum.RoleResearch {
+		user := ctx.Value(util.UserKey).(*dto.Authorization)
+		if user.Role != enum.RoleResearch {
 			err = serverErr.ErrNotAuthenticated
 			return
 		}
@@ -96,8 +118,8 @@ func handle(ctx context.Context, r *http.Request) (response interface{}, err err
 		return
 	}
 	if strings.HasPrefix(r.URL.Path, "/nurse") {
-		session, _ := store.Get(r, "cookie-name")
-		if session.Values["user"].(dto.Authorization).Role != enum.RoleNurse {
+		user := ctx.Value(util.UserKey).(*dto.Authorization)
+		if user.Role != enum.RoleNurse {
 			err = serverErr.ErrNotAuthenticated
 			return
 		}
@@ -106,10 +128,9 @@ func handle(ctx context.Context, r *http.Request) (response interface{}, err err
 		return
 	}
 	if strings.HasPrefix(r.URL.Path, "/pass") {
-		session, _ := store.Get(r, "cookie-name")
 		r.URL.Path = r.URL.Path[5:]
-		userUID := session.Values["user"].(dto.Authorization).UserUID
-		response, err = handlePassChange(ctx, r, userUID)
+		user := ctx.Value(util.UserKey).(*dto.Authorization)
+		response, err = handlePassChange(ctx, r, user.UserUID)
 		return
 	}
 	err = serverErr.ErrInvalidAPICall
@@ -120,7 +141,14 @@ func login(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 	dbRunner := db.CreateRunner(db.Handle)
 	ctx = context.WithValue(ctx, db.RunnerKey, dbRunner)
-	session, _ := store.Get(r, "cookie-name")
+	w.Header().Add("Content-Type", "application/json; charset=utf-8")
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+	w.Header().Add("Access-Control-Allow-Methods", "HEAD, GET, POST, PUT, DELETE, PATCH, OPTIONS")
+	w.Header().Add("Access-Control-Allow-Headers", "Authorization")
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
 
 	type loginRequest struct {
 		Username string
@@ -130,8 +158,10 @@ func login(w http.ResponseWriter, r *http.Request) {
 	type loginResponse struct {
 		Username      string
 		Authenticated bool
+		Authorization string
 		Role          enum.Role
 	}
+
 	request := &loginRequest{}
 	response := &loginResponse{}
 	err := json.NewDecoder(r.Body).Decode(request)
@@ -152,14 +182,16 @@ func login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session.Values["user"] = user
-	err = session.Save(r, w)
+	token, err := util.CreateSession(ctx, user.UserUID)
 	if err != nil {
 		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 	response.Authenticated = true
 	response.Role = user.Role
 	response.Username = request.Username
+	response.Authorization = token
 	buf := make([]byte, 0, 1000)
 	responsew := bytes.NewBuffer(buf)
 	json.NewEncoder(responsew).Encode(response)
@@ -168,9 +200,18 @@ func login(w http.ResponseWriter, r *http.Request) {
 }
 
 func logout(w http.ResponseWriter, r *http.Request) {
-	session, _ := store.Get(r, "cookie-name")
-
-	// Revoke users authentication
-	session.Values["user"] = nil
-	session.Save(r, w)
+	authorization := r.Header.Get("Authorization")
+	if authorization == "" {
+		http.Error(w, "Forbidden", http.StatusUnauthorized)
+		return
+	}
+	ctx := context.Background()
+	dbRunner := db.CreateRunner(db.Handle)
+	ctx = context.WithValue(ctx, db.RunnerKey, dbRunner)
+	err := data.RemoveSession(ctx, authorization)
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }
