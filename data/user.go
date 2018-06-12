@@ -17,7 +17,7 @@ var (
 func createUser(ctx context.Context, request *dto.CreateUserRequest) (uid string, err error) {
 	d := ctx.Value(db.RunnerKey).(db.Runner)
 
-	query := `insert into user 
+	query := `insert into system_user 
 				(employee_uid, username,password) 
 				values ($1, $2, $3)
 				returning uid`
@@ -44,7 +44,7 @@ func createUser(ctx context.Context, request *dto.CreateUserRequest) (uid string
 func updateUser(ctx context.Context, userUID string, request *dto.UpdateUserRequest) (err error) {
 	d := ctx.Value(db.RunnerKey).(db.Runner)
 
-	query := `update user set
+	query := `update system_user set
 				username = $1,
 				password = $2
 				where uid = $3`
@@ -80,7 +80,7 @@ func getUser(ctx context.Context, userUID string) (user *dto.GetUserResponse, er
 				e.role_id as "RoleID",
 				u.username as "Username",
 				u.password as "Password"
-				from user u
+				from system_user u
 				join employee e on (u.employee_uid = e.uid)
 				join person pe on (e.person_uid = pe.uid) 
 				where e.uid = $1`
@@ -115,7 +115,7 @@ func getUsers(ctx context.Context) (users *dto.GetUsersResponse, err error) {
 				e.role_id as "RoleID",
 				u.username as "Username",
 				u.password as "Password"
-				from username u
+				from system_user u
 				join employee e on (u.employee_uid = e.uid)
 				join person pe on (e.person_uid = pe.uid)`
 

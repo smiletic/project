@@ -30,6 +30,7 @@ var (
 func handleAuthorized(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json; charset=utf-8")
 	w.Header().Add("Access-Control-Allow-Origin", "*")
+	w.Header().Add("Access-Control-Allow-Headers", "Authorization")
 	w.Header().Add("Access-Control-Allow-Methods", "HEAD, GET, POST, PUT, DELETE, PATCH, OPTIONS")
 	if r.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusOK)
@@ -200,6 +201,14 @@ func login(w http.ResponseWriter, r *http.Request) {
 }
 
 func logout(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json; charset=utf-8")
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+	w.Header().Add("Access-Control-Allow-Methods", "HEAD, GET, POST, PUT, DELETE, PATCH, OPTIONS")
+	w.Header().Add("Access-Control-Allow-Headers", "Authorization")
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
 	authorization := r.Header.Get("Authorization")
 	if authorization == "" {
 		http.Error(w, "Forbidden", http.StatusUnauthorized)

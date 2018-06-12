@@ -138,7 +138,7 @@ func updateEmployeeForUser(ctx context.Context, userUID string, request *dto.Upd
 
 	query := `update employee set
 				work_document_id = $1
-				where uid = (select employee_uid from user where uid = $2 limit 1)
+				where uid = (select employee_uid from system_user where uid = $2 limit 1)
 				returning uid`
 
 	rows, err := d.Query(ctx, query, request.WorkDocumentID, userUID)
