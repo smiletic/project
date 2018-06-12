@@ -15,14 +15,20 @@ func handleNurse(ctx context.Context, r *http.Request) (response interface{}, er
 		case http.MethodPost:
 			return core.CreatePerson(ctx, r.Body)
 		case http.MethodPatch:
-			return nil, core.UpdatePerson(ctx, r.URL.Path[1:], r.Body)
+			if strings.HasPrefix(r.URL.Path, "/") {
+				return nil, core.UpdatePerson(ctx, r.URL.Path[1:], r.Body)
+			}
+			return nil, serverErr.ErrBadRequest
 		case http.MethodGet:
 			if strings.HasPrefix(r.URL.Path, "/") {
 				return core.GetPerson(ctx, r.URL.Path[1:])
 			}
 			return core.GetPersons(ctx)
 		case http.MethodDelete:
-			return nil, core.RemovePerson(ctx, r.URL.Path[1:])
+			if strings.HasPrefix(r.URL.Path, "/") {
+				return nil, core.RemovePerson(ctx, r.URL.Path[1:])
+			}
+			return nil, serverErr.ErrBadRequest
 		}
 	}
 	if strings.HasPrefix(r.URL.Path, "/patient") {
@@ -31,14 +37,20 @@ func handleNurse(ctx context.Context, r *http.Request) (response interface{}, er
 		case http.MethodPost:
 			return core.CreatePatient(ctx, r.Body)
 		case http.MethodPatch:
-			return nil, core.UpdatePatient(ctx, r.URL.Path[1:], r.Body)
+			if strings.HasPrefix(r.URL.Path, "/") {
+				return nil, core.UpdatePatient(ctx, r.URL.Path[1:], r.Body)
+			}
+			return nil, serverErr.ErrBadRequest
 		case http.MethodGet:
 			if strings.HasPrefix(r.URL.Path, "/") {
 				return core.GetPatient(ctx, r.URL.Path[1:])
 			}
 			return core.GetPatients(ctx)
 		case http.MethodDelete:
-			return nil, core.RemovePatient(ctx, r.URL.Path[1:])
+			if strings.HasPrefix(r.URL.Path, "/") {
+				return nil, core.RemovePatient(ctx, r.URL.Path[1:])
+			}
+			return nil, serverErr.ErrBadRequest
 		}
 	}
 	if strings.HasPrefix(r.URL.Path, "/examination") {
@@ -48,7 +60,10 @@ func handleNurse(ctx context.Context, r *http.Request) (response interface{}, er
 		case http.MethodGet:
 			return core.GetExaminations(ctx)
 		case http.MethodDelete:
-			return nil, core.RemoveExamination(ctx, r.URL.Path[1:])
+			if strings.HasPrefix(r.URL.Path, "/") {
+				return nil, core.RemoveExamination(ctx, r.URL.Path[1:])
+			}
+			return nil, serverErr.ErrBadRequest
 		}
 	}
 

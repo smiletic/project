@@ -20,7 +20,10 @@ func handleDoctor(ctx context.Context, r *http.Request) (response interface{}, e
 			}
 			return core.GetTests(ctx)
 		case http.MethodDelete:
-			return nil, core.RemoveTest(ctx, r.URL.Path[1:])
+			if strings.HasPrefix(r.URL.Path, "/") {
+				return nil, core.RemoveTest(ctx, r.URL.Path[1:])
+			}
+			return nil, serverErr.ErrBadRequest
 		}
 	}
 	if strings.HasPrefix(r.URL.Path, "/filled") {
@@ -34,7 +37,10 @@ func handleDoctor(ctx context.Context, r *http.Request) (response interface{}, e
 			}
 			return core.GetFilledTests(ctx)
 		case http.MethodDelete:
-			return nil, core.RemoveFilledTest(ctx, r.URL.Path[1:])
+			if strings.HasPrefix(r.URL.Path, "/") {
+				return nil, core.RemoveFilledTest(ctx, r.URL.Path[1:])
+			}
+			return nil, serverErr.ErrBadRequest
 		}
 	}
 	return nil, serverErr.ErrInvalidAPICall
