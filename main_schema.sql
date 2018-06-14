@@ -20,12 +20,10 @@ DROP TABLE IF EXISTS
 	test,
 	examination,
 	patient,
-	doctor,
-	administrator,
-	nurse,
 	role,
 	specialty,
 	system_user,
+	login_session,
 	employee,
 	person
 	CASCADE;
@@ -59,14 +57,26 @@ CREATE TABLE patient (
 
 ALTER TABLE patient OWNER TO postgres;
 
+CREATE TABLE role (
+	role_id int NOT NULL,
+	role_name text NOT NULL,
+	CONSTRAINT role_id_pkey PRIMARY KEY (role_id)
+);
+
+ALTER TABLE role OWNER TO postgres;
+
 CREATE TABLE employee (
     uid uuid NOT NULL DEFAULT uuid_generate_v1(),
 	person_uid uuid NOT NULL,
 	work_document_id text NOT NULL,
-	role_id int,
+	role_id int NOT NULL,
 	CONSTRAINT employee_uid_pkey PRIMARY KEY (uid),
 	CONSTRAINT fk_person FOREIGN KEY (person_uid)
 		REFERENCES person (uid) MATCH SIMPLE
+		ON UPDATE NO ACTION
+		ON DELETE CASCADE,
+	CONSTRAINT fk_role_id FOREIGN KEY (role_id)
+		REFERENCES role (role_id) MATCH SIMPLE
 		ON UPDATE NO ACTION
 		ON DELETE CASCADE
 );
@@ -82,69 +92,17 @@ CREATE TABLE specialty (
 
 ALTER TABLE specialty OWNER TO postgres;
 
-CREATE TABLE doctor (
-    uid uuid NOT NULL DEFAULT uuid_generate_v1(),
-	employee_uid uuid NOT NULL,
-	license_number text NOT NULL,
-	specialty_id int NOT NULL,
-	CONSTRAINT doctor_uid_pkey PRIMARY KEY (uid),
-	CONSTRAINT fk_employee FOREIGN KEY (employee_uid)
-		REFERENCES employee (uid) MATCH SIMPLE
-		ON UPDATE NO ACTION
-		ON DELETE CASCADE,
-	CONSTRAINT fk_specialty FOREIGN KEY (specialty_id)
-		REFERENCES specialty (specialty_id) MATCH SIMPLE
-		ON UPDATE NO ACTION
-		ON DELETE CASCADE
-);
 
-ALTER TABLE doctor OWNER TO postgres;
 
-CREATE TABLE administrator (
-    uid uuid NOT NULL DEFAULT uuid_generate_v1(),
-	employee_uid uuid NOT NULL,
-	CONSTRAINT administrator_uid_pkey PRIMARY KEY (uid),
-	CONSTRAINT fk_employee FOREIGN KEY (employee_uid)
-		REFERENCES employee (uid) MATCH SIMPLE
-		ON UPDATE NO ACTION
-		ON DELETE CASCADE
-);
-
-ALTER TABLE administrator OWNER TO postgres;
-
-CREATE TABLE nurse (
-    uid uuid NOT NULL DEFAULT uuid_generate_v1(),
-	employee_uid uuid NOT NULL,
-	CONSTRAINT nurse_uid_pkey PRIMARY KEY (uid),
-	CONSTRAINT fk_employee FOREIGN KEY (employee_uid)
-		REFERENCES employee (uid) MATCH SIMPLE
-		ON UPDATE NO ACTION
-		ON DELETE CASCADE
-);
-
-ALTER TABLE nurse OWNER TO postgres;
-
-CREATE TABLE role (
-	role_id int NOT NULL,
-	role_name text NOT NULL,
-	CONSTRAINT role_id_pkey PRIMARY KEY (role_id)
-);
-
-ALTER TABLE role OWNER TO postgres;
 
 CREATE TABLE system_user (
     uid uuid NOT NULL DEFAULT uuid_generate_v1(),
 	employee_uid uuid NOT NULL,
-	role int NOT NULL,
 	username text NOT NULL,
 	password text NOT NULL,
 	CONSTRAINT system_user_uid_pkey PRIMARY KEY (uid),
 	CONSTRAINT fk_employee FOREIGN KEY (employee_uid)
 		REFERENCES employee (uid) MATCH SIMPLE
-		ON UPDATE NO ACTION
-		ON DELETE CASCADE,
-	CONSTRAINT fk_role FOREIGN KEY (role)
-		REFERENCES role (role_id) MATCH SIMPLE
 		ON UPDATE NO ACTION
 		ON DELETE CASCADE
 );

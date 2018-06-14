@@ -46,10 +46,11 @@ func updateEmployee(ctx context.Context, employeeUID string, request *dto.Update
 	d := ctx.Value(db.RunnerKey).(db.Runner)
 
 	query := `update employee set
-				work_document_id = $1
-				where uid = $2`
+				work_document_id = $1,
+				role_id = $2
+				where uid = $3`
 
-	_, err = d.Exec(ctx, query, request.WorkDocumentID, employeeUID)
+	_, err = d.Exec(ctx, query, request.WorkDocumentID, request.RoleID, employeeUID)
 
 	return
 }

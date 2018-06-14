@@ -19,8 +19,9 @@ func login(ctx context.Context, name, passhash string) (autorizacija *dto.Author
 	d := ctx.Value(db.RunnerKey).(db.Runner)
 
 	query := `
-		select uid, role, username
-		from system_user
+		select s.uid, e.role_id, s.username
+		from system_user s
+		join employee e on (s.employee_uid = e.uid)
 		where username = $1
 		and password = $2`
 
@@ -76,8 +77,9 @@ func getSession(ctx context.Context, authorization string) (autorizacija *dto.Au
 	d := ctx.Value(db.RunnerKey).(db.Runner)
 
 	query := `
-		select su.uid, su.role, su.username
+		select su.uid, e.role_id, su.username
 		from system_user su
+		join employee e on (su.employee_uid = e.uid)
 		join login_session ls on (su.uid = ls.system_user_uid)
 		where ls.token = $1`
 
