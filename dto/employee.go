@@ -46,7 +46,7 @@ type EmployeeBasicInfo struct {
 	Name           string
 	Surname        string
 	WorkDocumentID string `json:"WorkDocumentId"`
-	RoleID         int    `json:"RoleId"`
+	RoleID         int    `json:"RoleId,omitempty"`
 }
 
 type GetEmployeesResponse struct {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"projekat/db"
 	"projekat/dto"
+	"projekat/enum"
 )
 
 var (
@@ -13,6 +14,7 @@ var (
 	DeleteEmployee        = deleteEmployee
 	GetEmployee           = getEmployee
 	GetEmployees          = getEmployees
+	GetDoctors            = getDoctors
 )
 
 func createEmployee(ctx context.Context, request *dto.CreateEmployeeRequest) (uid string, err error) {
@@ -115,6 +117,37 @@ func getEmployees(ctx context.Context) (employees *dto.GetEmployeesResponse, err
 				join person pe on (e.person_uid = pe.uid)`
 
 	rows, err := d.Query(ctx, query)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+
+	rr, err := db.GetRowReader(rows)
+	if err != nil {
+		return
+	}
+	employees = &dto.GetEmployeesResponse{}
+	for rr.ScanNext() {
+		employee := &dto.EmployeeBasicInfo{}
+		rr.ReadAllToStruct(employee)
+		employees.Employees = append(employees.Employees, employee)
+	}
+	err = rr.Error()
+	return
+}
+
+func getDoctors(ctx context.Context) (employees *dto.GetEmployeesResponse, err error) {
+	d := ctx.Value(db.RunnerKey).(db.Runner)
+	query := `select 
+				e.uid as "UID",
+				pe.name as "Name",
+				pe.surname as "Surname",
+				e.work_document_id as "WorkDocumentID"
+				from employee e
+				join person pe on (e.person_uid = pe.uid)
+				where role_id = $1`
+
+	rows, err := d.Query(ctx, query, enum.RoleDoctor)
 	if err != nil {
 		return
 	}

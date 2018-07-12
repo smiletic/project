@@ -112,11 +112,13 @@ ALTER TABLE system_user OWNER TO postgres;
 CREATE TABLE examination (
     uid uuid NOT NULL DEFAULT uuid_generate_v1(),
 	doctor_uid uuid NOT NULL,
+	doctor_full_name text,
 	patient_uid uuid NOT NULL,
+	patient_full_name text,
 	examination_date date NOT NULL DEFAULT now(),
 	CONSTRAINT examination_uid_pkey PRIMARY KEY (uid),
 	CONSTRAINT fk_doctor FOREIGN KEY (doctor_uid)
-		REFERENCES doctor (uid) MATCH SIMPLE
+		REFERENCES employee (uid) MATCH SIMPLE
 		ON UPDATE NO ACTION
 		ON DELETE CASCADE,
 	CONSTRAINT fk_patient FOREIGN KEY (patient_uid)

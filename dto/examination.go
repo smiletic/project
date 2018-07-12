@@ -15,9 +15,11 @@ type CreateExaminationRequest struct {
 }
 
 type ExaminationInfo struct {
-	UID             string    `json:"Uid"`
-	DoctorUID       string    `json:"DoctorUid"`
-	PatientUID      string    `json:"PatientUid"`
+	UID             string `json:"Uid"`
+	DoctorUID       string `json:"DoctorUid"`
+	DoctorFullName  string
+	PatientUID      string `json:"PatientUid"`
+	PatientFullName string
 	ExaminationDate time.Time `json:",string"`
 }
 

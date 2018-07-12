@@ -86,11 +86,15 @@ func getTests(ctx context.Context) (tests *dto.GetTestsResponse, err error) {
 		return
 	}
 	tests = &dto.GetTestsResponse{}
+	testList := make([]*dto.TestInfo, 0)
+
 	for rr.ScanNext() {
 		test := &dto.TestInfo{}
 		rr.ReadAllToStruct(test)
-		tests.Tests = append(tests.Tests, test)
+		testList = append(testList, test)
 	}
+
+	tests.Tests = testList
 	err = rr.Error()
 	return
 }

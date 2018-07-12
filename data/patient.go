@@ -70,8 +70,8 @@ func getPatient(ctx context.Context, patientUID string) (patient *dto.GetPatient
 	query := `select 
 				p.uid as "UID",
 				p.person_uid as "PersonUID",
-				pe.name as "PersonName",
-				pe.surname as "PersonSurname",
+				pe.name as "Name",
+				pe.surname as "Surname",
 				p.medical_record_id as "MedicalRecordID",
 				p.health_card_id as "HealthCardID",
 				p.health_card_valid_until as "HealthCardValidUntil"
@@ -104,8 +104,8 @@ func getPatients(ctx context.Context) (patients *dto.GetPatientsResponse, err er
 	query := `select 
 				p.uid as "UID",
 				p.person_uid as "PersonUID",
-				pe.name as "PersonName",
-				pe.surname as "PersonSurname",
+				pe.name as "Name",
+				pe.surname as "Surname",
 				p.medical_record_id as "MedicalRecordID",
 				p.health_card_id as "HealthCardID",
 				p.health_card_valid_until as "HealthCardValidUntil"

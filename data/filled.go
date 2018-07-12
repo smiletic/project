@@ -91,6 +91,7 @@ func getFilledTests(ctx context.Context) (filledTests *dto.GetFilledTestsRespons
 		return
 	}
 	filledTests = &dto.GetFilledTestsResponse{}
+	filledTests.FilledTests = make([]*dto.FilledTestsInfo, 0, 0)
 	for rr.ScanNext() {
 		filledTestInfo := &dto.FilledTestsInfo{}
 		rr.ReadAllToStruct(filledTestInfo)

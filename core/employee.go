@@ -16,6 +16,7 @@ var (
 	RemoveEmployee = removeEmployee
 	GetEmployee    = getEmployee
 	GetEmployees   = getEmployees
+	GetDoctors     = getDoctors
 )
 
 func createEmployee(ctx context.Context, requestBody io.Reader) (response *dto.CreateEmployeeResponse, err error) {
@@ -96,6 +97,15 @@ func getEmployee(ctx context.Context, employeeUID string) (response *dto.GetEmpl
 
 func getEmployees(ctx context.Context) (response *dto.GetEmployeesResponse, err error) {
 	response, err = data.GetEmployees(ctx)
+	if err != nil {
+		fmt.Println(err)
+		err = serverErr.ErrInternal
+	}
+	return
+}
+
+func getDoctors(ctx context.Context) (response *dto.GetEmployeesResponse, err error) {
+	response, err = data.GetDoctors(ctx)
 	if err != nil {
 		fmt.Println(err)
 		err = serverErr.ErrInternal

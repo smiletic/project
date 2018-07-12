@@ -60,10 +60,17 @@ func handleNurse(ctx context.Context, r *http.Request) (response interface{}, er
 		case http.MethodGet:
 			return core.GetExaminations(ctx)
 		case http.MethodDelete:
+			r.URL.Path = r.URL.Path[12:]
 			if strings.HasPrefix(r.URL.Path, "/") {
 				return nil, core.RemoveExamination(ctx, r.URL.Path[1:])
 			}
 			return nil, serverErr.ErrBadRequest
+		}
+	}
+	if strings.HasPrefix(r.URL.Path, "/doctor") {
+		switch r.Method {
+		case http.MethodGet:
+			return core.GetDoctors(ctx)
 		}
 	}
 

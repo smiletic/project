@@ -16,8 +16,19 @@ func createExamination(ctx context.Context, request *dto.CreateExaminationReques
 	d := ctx.Value(db.RunnerKey).(db.Runner)
 
 	query := `insert into examination 
-				(doctor_uid, patient_uid, date_of_examination) 
-				values ($1, $2, $3)
+				(doctor_uid, patient_uid, examination_date, doctor_full_name, patient_full_name) 
+				values ($1, $2, $3,(
+						SELECT CONCAT(p.name, ' ', p.surname)
+						from employee e
+						join person p on (e.person_uid = p.uid)
+						where e.uid = $1
+					),(
+						SELECT CONCAT(p.name,' ', p.surname)
+						from patient pa
+						join person p on (pa.person_uid = p.uid)
+						where pa.uid = $2
+						)
+				)
 				returning uid`
 
 	rows, err := d.Query(ctx, query, request.DoctorUID, request.PatientUID, request.ExaminationDate)
@@ -52,12 +63,14 @@ func deleteExamination(ctx context.Context, examinationUID string) (err error) {
 
 func getExaminations(ctx context.Context) (examinations *dto.GetExaminationsResponse, err error) {
 	d := ctx.Value(db.RunnerKey).(db.Runner)
-	query := `	select 
+	query := `select 
 				uid as "UID",
 				doctor_uid as "DoctorUID",
+				doctor_full_name as "DoctorFullName",
 				patient_uid as "PatientUID",
+				patient_full_name as "PatientFullName",
 				examination_date as "ExaminationDate"
-	 			from examination `
+	 			from examination`
 
 	rows, err := d.Query(ctx, query)
 	if err != nil {
@@ -69,6 +82,7 @@ func getExaminations(ctx context.Context) (examinations *dto.GetExaminationsResp
 	if err != nil {
 		return
 	}
+	examinations = &dto.GetExaminationsResponse{}
 	examinationInfos := make([]*dto.ExaminationInfo, 0)
 	for rr.ScanNext() {
 		examination := &dto.ExaminationInfo{}
