@@ -43,5 +43,11 @@ func handleDoctor(ctx context.Context, r *http.Request) (response interface{}, e
 			return nil, serverErr.ErrBadRequest
 		}
 	}
+	if strings.HasPrefix(r.URL.Path, "/examination") {
+		switch r.Method {
+		case http.MethodGet:
+			return core.GetMyExaminations(ctx)
+		}
+	}
 	return nil, serverErr.ErrInvalidAPICall
 }

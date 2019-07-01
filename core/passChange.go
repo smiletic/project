@@ -3,12 +3,12 @@ package core
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"projekat/data"
 	"projekat/dto"
+	"projekat/logger"
 	"projekat/serverErr"
-	"projekat/util"
+	"projekat/utils"
 )
 
 var (
@@ -19,24 +19,25 @@ func changePass(ctx context.Context, requestBody io.Reader, userUID string) (err
 	request := &dto.ChangePassRequest{}
 	err = json.NewDecoder(requestBody).Decode(request)
 	if err != nil {
-		fmt.Println(err)
+		logger.Warn("Request data could not be decoded: %v")
 		err = serverErr.ErrBadRequest
 		return
 	}
 
-	passed, err := data.CheckPassword(ctx, util.GetMD5Hash(request.OldPass), userUID)
+	passed, err := data.CheckPassword(ctx, utils.GetMD5Hash(request.OldPass), userUID)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Couldn't check old password: %v")
 		err = serverErr.ErrInternal
 		return
 	}
 	if !passed {
+		logger.Warn("User with uid %v is trying to change pass with bad authentication", userUID)
 		err = serverErr.ErrNotAuthenticated
 		return
 	}
-	err = data.ChangePassword(ctx, util.GetMD5Hash(request.NewPass), userUID)
+	err = data.ChangePassword(ctx, utils.GetMD5Hash(request.NewPass), userUID)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Couldn't change password: %v", err)
 		err = serverErr.ErrInternal
 		return
 	}

@@ -3,60 +3,90 @@ package handler
 import (
 	"bytes"
 	"context"
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"net/http"
-	"projekat/data"
+	"projekat/config"
+	"projekat/core"
 	"projekat/db"
 	"projekat/dto"
 	"projekat/enum"
+	"projekat/logger"
 	"projekat/serverErr"
-	"projekat/util"
 	"strings"
+	"time"
 
 	"github.com/gorilla/sessions"
 )
 
 var (
-	Login            = login
-	Logout           = logout
-	HandleAuthorized = handleAuthorized
+	Login             = login
+	Logout            = logout
+	HandleAuthorized  = handleAuthorized
+	HandleTestingHash = handleTestingHash
+)
+
+const (
+	headerAuth    = "Authorization"
+	headerUserUID = "UserUID"
+
+	httpErrForbidden = "Forbidden"
+	httpErrInternal  = "Internal"
 )
 
 var (
-	store = sessions.NewCookieStore([]byte("something-very-secret"))
+	store = sessions.NewCookieStore([]byte("09816973ba8863acb8b4adebafad115cdd3c28c9cc3201f80f2b14261cb8dc12"))
 )
 
-func handleAuthorized(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "application/json; charset=utf-8")
-	w.Header().Add("Access-Control-Allow-Origin", "*")
-	w.Header().Add("Access-Control-Allow-Headers", "Authorization")
-	w.Header().Add("Access-Control-Allow-Methods", "HEAD, GET, POST, PUT, DELETE, PATCH, OPTIONS")
-	if r.Method == http.MethodOptions {
-		w.WriteHeader(http.StatusOK)
-		return
+func handleTestingHash(w http.ResponseWriter, r *http.Request) {
+	type response struct {
+		Auth string
 	}
 
-	authorization := r.Header.Get("Authorization")
-	if authorization == "" {
-		http.Error(w, "Forbidden", http.StatusUnauthorized)
+	if err := shouldTestingRequestBeAllowed(r); err != nil {
+		logger.Error("Will not handle request: %v", err)
+		http.Error(w, httpErrForbidden, http.StatusForbidden)
+		return
+	}
+	authorization := r.Header.Get(headerAuth)
+
+	loc, _ := time.LoadLocation("UTC")
+	now := time.Now().In(loc)
+	currentTime := now.Format(time.RFC3339)
+
+	hash := md5.New()
+	hash.Write([]byte(currentTime))
+	hash.Write([]byte(authorization))
+	h := hash.Sum(nil)
+	resp := response{currentTime + "|" + hex.EncodeToString(h)}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp)
+}
+
+func handleAuthorized(w http.ResponseWriter, r *http.Request) {
+	authorization := r.Header.Get(headerAuth)
+	userUID := r.Header.Get(headerUserUID)
+	if authorization == "" || userUID == "" {
+		http.Error(w, httpErrForbidden, http.StatusUnauthorized)
 		return
 	}
 
 	ctx := context.Background()
-	dbRunner := db.CreateRunner(db.Handle)
+	dbRunner := db.CreateRunner()
 	ctx = context.WithValue(ctx, db.RunnerKey, dbRunner)
 
-	user, err := data.GetSession(ctx, authorization)
+	userSession, err := core.GetSession(ctx, authorization, userUID)
 	if err != nil {
-		http.Error(w, "Internal", http.StatusInternalServerError)
+		http.Error(w, httpErrInternal, http.StatusInternalServerError)
 		return
 	}
-	if user == nil {
-		http.Error(w, "Forbidden", http.StatusUnauthorized)
+	if userSession == nil {
+		http.Error(w, httpErrForbidden, http.StatusUnauthorized)
 		return
 	}
-	ctx = context.WithValue(ctx, util.UserKey, user)
+	ctx = context.WithValue(ctx, core.UserKey, userSession)
 
 	r.URL.Path = r.URL.Path[5:]
 
@@ -81,75 +111,57 @@ func handleAuthorized(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Write response.
-
 	w.WriteHeader(httpResponseStatus)
 	json.NewEncoder(w).Encode(response)
 }
 
 func handle(ctx context.Context, r *http.Request) (response interface{}, err error) {
-	if strings.HasPrefix(r.URL.Path, "/admin") {
-		user := ctx.Value(util.UserKey).(*dto.Authorization)
-		if user.Role != enum.RoleAdmin {
+	userSession := ctx.Value(core.UserKey).(*dto.SessionInfo)
+	switch {
+	case strings.HasPrefix(r.URL.Path, "/admin"):
+		if userSession.Role != enum.RoleAdmin {
 			err = serverErr.ErrNotAuthenticated
 			return
 		}
 		r.URL.Path = r.URL.Path[6:]
 		response, err = handleAdmin(ctx, r)
-		return
-	}
-	if strings.HasPrefix(r.URL.Path, "/doctor") {
-		user := ctx.Value(util.UserKey).(*dto.Authorization)
-		if user.Role != enum.RoleDoctor {
+
+	case strings.HasPrefix(r.URL.Path, "/doctor"):
+		if userSession.Role != enum.RoleDoctor {
 			err = serverErr.ErrNotAuthenticated
 			return
 		}
 		r.URL.Path = r.URL.Path[7:]
 		response, err = handleDoctor(ctx, r)
-		return
-	}
-	if strings.HasPrefix(r.URL.Path, "/research") {
-		user := ctx.Value(util.UserKey).(*dto.Authorization)
-		if user.Role != enum.RoleResearch {
+
+	case strings.HasPrefix(r.URL.Path, "/research"):
+		if userSession.Role != enum.RoleResearch {
 			err = serverErr.ErrNotAuthenticated
 			return
 		}
 		r.URL.Path = r.URL.Path[9:]
 		response, err = handleResearcher(ctx, r)
-		return
-	}
-	if strings.HasPrefix(r.URL.Path, "/nurse") {
-		user := ctx.Value(util.UserKey).(*dto.Authorization)
-		if user.Role != enum.RoleNurse {
+
+	case strings.HasPrefix(r.URL.Path, "/nurse"):
+		if userSession.Role != enum.RoleNurse {
 			err = serverErr.ErrNotAuthenticated
 			return
 		}
 		r.URL.Path = r.URL.Path[6:]
 		response, err = handleNurse(ctx, r)
-		return
-	}
-	if strings.HasPrefix(r.URL.Path, "/pass") {
+	case strings.HasPrefix(r.URL.Path, "/pass"):
 		r.URL.Path = r.URL.Path[5:]
-		user := ctx.Value(util.UserKey).(*dto.Authorization)
-		response, err = handlePassChange(ctx, r, user.UserUID)
-		return
+		response, err = handlePassChange(ctx, r, userSession.UserUID)
+	default:
+		err = serverErr.ErrInvalidAPICall
 	}
-	err = serverErr.ErrInvalidAPICall
 	return
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
-	dbRunner := db.CreateRunner(db.Handle)
+	dbRunner := db.CreateRunner()
 	ctx = context.WithValue(ctx, db.RunnerKey, dbRunner)
-	w.Header().Add("Content-Type", "application/json; charset=utf-8")
-	w.Header().Add("Access-Control-Allow-Origin", "*")
-	w.Header().Add("Access-Control-Allow-Methods", "HEAD, GET, POST, PUT, DELETE, PATCH, OPTIONS")
-	w.Header().Add("Access-Control-Allow-Headers", "Authorization")
-	if r.Method == http.MethodOptions {
-		w.WriteHeader(http.StatusOK)
-		return
-	}
 
 	type loginRequest struct {
 		Username string
@@ -158,6 +170,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 	type loginResponse struct {
 		Username      string
+		UserUID       string
 		Authenticated bool
 		Authorization string
 		Role          enum.Role
@@ -167,31 +180,30 @@ func login(w http.ResponseWriter, r *http.Request) {
 	response := &loginResponse{}
 	err := json.NewDecoder(r.Body).Decode(request)
 	if err != nil {
-		fmt.Println(err)
+		logger.Warn("Request data could not be decoded: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	user, err := util.Login(ctx, request.Username, request.Password)
+	userSession, err := core.Login(ctx, request.Username, request.Password)
 	if err != nil {
-		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	if user == nil {
+	if userSession == nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	token, err := util.CreateSession(ctx, user.UserUID)
+	token, err := core.CreateSession(ctx, userSession.UserUID)
 	if err != nil {
-		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	response.Authenticated = true
-	response.Role = user.Role
+	response.Role = userSession.Role
 	response.Username = request.Username
+	response.UserUID = userSession.UserUID
 	response.Authorization = token
 	buf := make([]byte, 0, 1000)
 	responsew := bytes.NewBuffer(buf)
@@ -201,26 +213,42 @@ func login(w http.ResponseWriter, r *http.Request) {
 }
 
 func logout(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "application/json; charset=utf-8")
-	w.Header().Add("Access-Control-Allow-Origin", "*")
-	w.Header().Add("Access-Control-Allow-Methods", "HEAD, GET, POST, PUT, DELETE, PATCH, OPTIONS")
-	w.Header().Add("Access-Control-Allow-Headers", "Authorization")
-	if r.Method == http.MethodOptions {
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	authorization := r.Header.Get("Authorization")
-	if authorization == "" {
-		http.Error(w, "Forbidden", http.StatusUnauthorized)
+	authorization := r.Header.Get(headerAuth)
+	userUID := r.Header.Get(headerUserUID)
+	if authorization == "" || userUID == "" {
+		http.Error(w, httpErrForbidden, http.StatusUnauthorized)
 		return
 	}
 	ctx := context.Background()
-	dbRunner := db.CreateRunner(db.Handle)
+	dbRunner := db.CreateRunner()
 	ctx = context.WithValue(ctx, db.RunnerKey, dbRunner)
-	err := data.RemoveSession(ctx, authorization)
+	err := core.RemoveSession(ctx, authorization, userUID)
 	if err != nil {
-		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+}
+
+func shouldTestingRequestBeAllowed(request *http.Request) error {
+	if !config.GetGeneralIsTestingMode() {
+		return errors.New("Request allowed only in testing mode")
+	}
+
+	if len(request.RemoteAddr) == 0 {
+		return errors.New("Request remote address is empty, which is unexpected")
+
+	}
+
+	portIndex := strings.LastIndex(request.RemoteAddr, ":")
+	if portIndex == -1 {
+		return errors.New("Request remote port is empty")
+
+	}
+	ip := request.RemoteAddr[0:portIndex]
+
+	if ip != "127.0.0.1" && ip != "::1" {
+		return errors.New("Request allowed from localhost only")
+	}
+
+	return nil
 }

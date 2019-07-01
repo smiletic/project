@@ -3,10 +3,10 @@ package core
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"projekat/data"
 	"projekat/dto"
+	"projekat/logger"
 	"projekat/serverErr"
 )
 
@@ -24,7 +24,7 @@ func createEmployee(ctx context.Context, requestBody io.Reader) (response *dto.C
 	response = &dto.CreateEmployeeResponse{}
 	err = json.NewDecoder(requestBody).Decode(request)
 	if err != nil {
-		fmt.Println(err)
+		logger.Warn("Request data cannot be decoded: %v", err)
 		err = serverErr.ErrBadRequest
 		return
 	}
@@ -33,7 +33,7 @@ func createEmployee(ctx context.Context, requestBody io.Reader) (response *dto.C
 		uid, err1 := data.CreatePerson(ctx, createPersonRequest)
 		if err1 != nil {
 			err = err1
-			fmt.Println(err)
+			logger.Error("Couldn't create person: %v", err)
 			return
 		}
 		request.PersonUID = uid
@@ -41,7 +41,7 @@ func createEmployee(ctx context.Context, requestBody io.Reader) (response *dto.C
 
 	uid, err := data.CreateEmployee(ctx, request)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Couldn't create employee: %v", err)
 		err = serverErr.ErrInternal
 		return
 	}
@@ -54,19 +54,19 @@ func updateEmployee(ctx context.Context, employeeUID string, requestBody io.Read
 	request := &dto.UpdateEmployeeRequest{}
 	err = json.NewDecoder(requestBody).Decode(request)
 	if err != nil {
-		fmt.Println(err)
+		logger.Warn("Request data cannot be decoded: %v", err)
 		err = serverErr.ErrBadRequest
 		return
 	}
 	updatePerson := &dto.UpdatePersonRequest{Name: request.Name, Surname: request.Surname, JMBG: request.JMBG, Email: request.Email, Address: request.Address, DateOfBirth: request.DateOfBirth}
 	err = data.UpdatePersonForEmployee(ctx, employeeUID, updatePerson)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Couldn't update person for employee %v: %v", employeeUID, err)
 		err = serverErr.ErrInternal
 	}
 	err = data.UpdateEmployee(ctx, employeeUID, request)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Couldn't update employee with uid: %v", employeeUID, err)
 		err = serverErr.ErrInternal
 	}
 
@@ -76,7 +76,7 @@ func updateEmployee(ctx context.Context, employeeUID string, requestBody io.Read
 func removeEmployee(ctx context.Context, employeeUID string) (err error) {
 	err = data.DeleteEmployee(ctx, employeeUID)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Couldn't remove employee with uid %v: %v", err)
 		err = serverErr.ErrInternal
 	}
 
@@ -87,7 +87,7 @@ func getEmployee(ctx context.Context, employeeUID string) (response *dto.GetEmpl
 
 	response, err = data.GetEmployee(ctx, employeeUID)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Couldn't get employee %v: %v", employeeUID, err)
 		err = serverErr.ErrInternal
 		return
 	}
@@ -98,7 +98,7 @@ func getEmployee(ctx context.Context, employeeUID string) (response *dto.GetEmpl
 func getEmployees(ctx context.Context) (response *dto.GetEmployeesResponse, err error) {
 	response, err = data.GetEmployees(ctx)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Couldn't get employees: %v", err)
 		err = serverErr.ErrInternal
 	}
 	return
@@ -107,7 +107,7 @@ func getEmployees(ctx context.Context) (response *dto.GetEmployeesResponse, err 
 func getDoctors(ctx context.Context) (response *dto.GetEmployeesResponse, err error) {
 	response, err = data.GetDoctors(ctx)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Couldn't get doctors: %v", err)
 		err = serverErr.ErrInternal
 	}
 	return

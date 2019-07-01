@@ -1,0 +1,3 @@
+[
+  "integration_tests/session/session_test.py::test_login_logout"
+]

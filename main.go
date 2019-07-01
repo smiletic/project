@@ -2,13 +2,14 @@ package main
 
 import (
 	"encoding/gob"
-	"fmt"
 	"math/rand"
 	"net/http"
+	"os"
 	"projekat/config"
+	"projekat/db"
 	"projekat/dto"
 	"projekat/handler"
-	"projekat/server"
+	"projekat/logger"
 	"time"
 
 	"github.com/gorilla/context"
@@ -17,28 +18,33 @@ import (
 func main() {
 
 	var err error
-	gob.Register(dto.Authorization{})
+	gob.Register(dto.SessionInfo{})
 
 	// Seed function is part of rand initialization.
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	fmt.Println("Initializing config")
+	logger.Init(os.Stdout, os.Stdout, os.Stderr)
+
+	logger.Info("Initializing config")
 	_, err = config.InitConfig("server", nil)
 	if err != nil {
-		fmt.Printf("Could not initialize config: %v\n", err)
+		logger.Error("Could not initialize config: %v\n", err)
 		return
 	}
 
-	fmt.Println("Initializing database")
-	err = server.InitializeDb()
+	logger.Info("Initializing database")
+	err = db.InitializeDb()
 	if err != nil {
-		fmt.Printf("Could not access database: %v\n", err)
+		logger.Error("Could not access database: %v\n", err)
 		return
 	}
 
 	http.HandleFunc("/auth/", handler.HandleAuthorized)
 	http.HandleFunc("/login", handler.Login)
 	http.HandleFunc("/logout", handler.Logout)
+	http.HandleFunc("/testingHash", handler.HandleTestingHash)
 
-	http.ListenAndServe(":8080", context.ClearHandler(http.DefaultServeMux))
+	logger.Info("Server listening on " + config.GetHTTPServerAddress())
+	http.ListenAndServe(config.GetHTTPServerAddress(), context.ClearHandler(http.DefaultServeMux))
+
 }

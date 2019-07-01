@@ -2,8 +2,9 @@ package dto
 
 import "projekat/enum"
 
-type Authorization struct {
+type SessionInfo struct {
 	UserUID  string
 	Username string
 	Role     enum.Role
+	Token    string
 }

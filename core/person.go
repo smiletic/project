@@ -3,10 +3,10 @@ package core
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"projekat/data"
 	"projekat/dto"
+	"projekat/logger"
 	"projekat/serverErr"
 )
 
@@ -23,14 +23,14 @@ func createPerson(ctx context.Context, requestBody io.Reader) (response *dto.Cre
 	response = &dto.CreatePersonResponse{}
 	err = json.NewDecoder(requestBody).Decode(request)
 	if err != nil {
-		fmt.Println(err)
+		logger.Warn("Request data cannot be decoded: %v", err)
 		err = serverErr.ErrBadRequest
 		return
 	}
 
 	uid, err := data.CreatePerson(ctx, request)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Couldn't create person: %v", err)
 		err = serverErr.ErrInternal
 		return
 	}
@@ -43,14 +43,14 @@ func updatePerson(ctx context.Context, personUID string, requestBody io.Reader) 
 	request := &dto.UpdatePersonRequest{}
 	err = json.NewDecoder(requestBody).Decode(request)
 	if err != nil {
-		fmt.Println(err)
+		logger.Warn("Request data cannot be decoded: %v", err)
 		err = serverErr.ErrBadRequest
 		return
 	}
 
 	err = data.UpdatePerson(ctx, personUID, request)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Couldn't update person with uid %v: %v", personUID, err)
 		err = serverErr.ErrInternal
 	}
 
@@ -60,7 +60,7 @@ func updatePerson(ctx context.Context, personUID string, requestBody io.Reader) 
 func removePerson(ctx context.Context, personUID string) (err error) {
 	err = data.DeletePerson(ctx, personUID)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Couldn't remove person with uid %v: %v", personUID, err)
 		err = serverErr.ErrInternal
 	}
 
@@ -71,7 +71,7 @@ func getPerson(ctx context.Context, personUID string) (response *dto.GetPersonRe
 
 	response, err = data.GetPerson(ctx, personUID)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Couldn't get person with uid %v: %v", personUID, err)
 		err = serverErr.ErrInternal
 		return
 	}
@@ -82,7 +82,7 @@ func getPerson(ctx context.Context, personUID string) (response *dto.GetPersonRe
 func getPersons(ctx context.Context) (response *dto.GetPersonsResponse, err error) {
 	response, err = data.GetPersons(ctx)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Couldn't remove person with uid %v: %v", err)
 		err = serverErr.ErrInternal
 		return
 	}

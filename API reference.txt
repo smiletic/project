@@ -1,0 +1,569 @@
+1)LOGIN
+Adresa:  /login
+Metod: POST
+Request:
+{
+Username:"username"
+Password:"password"
+}
+Response:
+{
+Authenticated bool
+Username string
+UserUID string
+Authorization string
+Role enum
+}
+
+RoleAdmin    Role = 1
+RoleDoctor   Role = 2
+RoleResearch Role = 3
+RoleNurse    Role = 4
+
+Uzmes Authorization iz  bodya i saaljes u svakom sledecem requestu u Headeru kao Authorization.
+
+2)LOGOUT
+Adresa:  /logout
+Metod: POST
+
+2.5)Change password
+Adresa: /auth/pass
+Method: POST
+Request: 
+{
+OldPass string
+NewPass string
+}
+
+3)Admin API
+3.1)Person
+3.1.1)Create person
+Adresa: /auth/admin/person
+Method: POST
+Request:
+{
+	Name        string
+	Surname     string
+	JMBG        string
+	DateOfBirth string
+	Address     string
+	Email       string
+}
+Response:
+{
+Uid string
+}
+Format datuma - "1989-10-21T00:00:00Z"
+3.1.2)Update person
+ 	Adresa:  /auth/admin/person/{personUID}
+Method: PATCH
+Request:
+{
+	Name        string
+	Surname     string
+	JMBG        string
+	DateOfBirth string
+	Address     string
+	Email       string
+}
+3.1.3) Read person(s)
+	Dve opcije: dohvati jednu osobu ili dohvati vise osoba
+	Za jednu:
+Adresa:  /auth/admin/person/{personUID}
+Method: GET
+Response:
+{
+	Name        string
+	Surname     string
+	JMBG        string
+	DateOfBirth string
+	Address     string
+	Email       string
+}
+Za vise:
+Adresa:  /auth/admin/person
+Method: GET
+Response:
+	{
+Persons: [{isto ko za jednog},{isto ko za jednog}]
+}
+3.1.4) Delete person
+	Adresa:  /auth/admin/person/{personUID}
+Method: DELETE
+
+3.2)Employee
+3.2.1)Create employee
+Adresa: /auth/admin/employee
+Method: POST
+Request:
+{
+	Name        string OPCIONI
+	Surname     string OPCIONI
+	JMBG        string OPCIONI
+	DateOfBirth string OPCIONI
+	Address     string OPCIONI
+	Email       string OPCIONI
+PersonUid string OPCIONI
+WorkDocumentId string
+RoleId         int
+}
+	BITNO:  Mozes da posaljes ili PersonUid ili sve ove ostale opcione parametre. Ako posaljes sve ostale napravice se nova osoba prilikom pravljenja zaposlenog.
+Response:
+{
+Uid string
+}
+
+3.2.2) Update employee
+Adresa: /auth/admin/employee/{employeeUid}
+Method: PATCH
+Request:
+{
+	Name        string
+	Surname     string
+	JMBG        string
+	DateOfBirth string
+	Address     string
+	Email       string
+WorkDocumentId string
+RoleId         int
+}
+3.2.3) Read employee
+	Dve opcije, jednog zaposlenog ili vise zaposlenih.
+Adresa: /auth/admin/employee/{employeeUid}
+Method: GET
+Response:
+{
+	Uid string
+	Name        string
+	Surname     string
+	JMBG        string
+	DateOfBirth string
+	Address     string
+	Email       string
+WorkDocumentId string
+RoleId         int
+}
+	Za vise zaposlenih:
+Adresa: /auth/admin/employee
+Method: GET
+{
+Employees:[
+{
+Uid string
+	Name        string
+	Surname     string
+	WorkDocumentId string
+RoleId         int
+},
+{
+Uid string
+	Name        string
+	Surname     string
+	WorkDocumentId string
+RoleId         int
+}]
+}
+3.2.4) Delete employee
+Adresa: /auth/admin/employee/{employeeUid}
+Method: DELETE
+
+3.3)User
+3.3.1)Create user
+Adresa: /auth/admin/user
+Method: POST
+Request:
+{
+	Name        string OPCIONI
+	Surname     string OPCIONI
+	JMBG        string OPCIONI
+	DateOfBirth string OPCIONI
+	Address     string OPCIONI
+	Email       string OPCIONI
+EmployeeUid string OPCIONI
+WorkDocumentId string
+RoleId         int
+Username string
+Password string
+}
+	BITNO:  Mozes da posaljes ili EmployeeUID ili sve ove ostale opcione parametre. Ako posaljes sve ostale napravice se novi  zaposleni prilikom pravljenja zaposlenog.
+Response:
+{
+Uid string
+}
+
+3.3.2) Update usera
+Adresa: /auth/admin/user/{userUID}
+Method: PATCH
+Request:
+{
+	Name        string
+	Surname     string
+	JMBG        string
+	DateOfBirth string
+	Address     string
+	Email       string
+WorkDocumentId string
+RoleId         int
+Username  string
+Password string
+}
+3.3.3) Read usera
+	Dve opcije, jednog usera ili vise usera.
+Adresa: /auth/admin/user/{userUID}
+Method: GET
+Response:
+{
+	Uid string
+	Name        string
+	Surname     string
+	JMBG        string
+	DateOfBirth string
+	Address     string
+	Email       string
+WorkDocumentId string
+RoleId         int
+Username string
+}
+	Za vise zaposlenih:
+Adresa: /auth/admin/user
+Method: GET
+{
+Users:[
+{
+Uid string
+	Name        string
+	Surname     string
+	WorkDocumentId string
+RoleId         int
+Username string
+},
+{
+Uid string
+	Name        string
+	Surname     string
+	WorkDocumentId string
+RoleId         int
+Username string
+}]
+}
+3.3.4) Delete user
+Adresa: /auth/admin/user/{userUID}
+Method: DELETE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4)Nurse API
+4.1)Person
+4.1.1)Create person
+Adresa: /auth/nurse/person
+Method: POST
+Request:
+{
+	Name        string
+	Surname     string
+	JMBG        string
+	DateOfBirth string
+	Address     string
+	Email       string
+}
+Response:
+{
+Uid string
+}
+
+Format datuma - "1989-10-21T00:00:00Z"
+4.1.2)Update person
+ 	Adresa:  /auth/nurse/person/{personUID}
+Method: PATCH
+Request:
+{
+	Name        string
+	Surname     string
+	JMBG        string
+	DateOfBirth string
+	Address     string
+	Email       string
+}
+4.1.3) Read person(s)
+	Dve opcije: dohvati jednu osobu ili dohvati vise osoba
+	Za jednu:
+Adresa:  /auth/nurse/person/{personUID}
+Method: GET
+Response:
+{
+	Name        string
+	Surname     string
+	JMBG        string
+	DateOfBirth string
+	Address     string
+	Email       string
+}
+Za vise:
+Adresa:  /auth/nurse/person
+Method: GET
+Response:
+	{
+Persons: [{isto ko za jednog},{isto ko za jednog}]
+}
+4.1.4) Delete person
+	Adresa:  /auth/nurse/person/{personUID}
+Method: DELETE
+
+4.2)Patient
+4.2.1)Create patient
+Adresa: /auth/nurse/patient
+Method: POST
+Request:
+{
+	Name        string OPCIONI
+	Surname     string OPCIONI
+	JMBG        string OPCIONI
+	DateOfBirth string OPCIONI
+	Address     string OPCIONI
+	Email       string OPCIONI
+PersonUid string OPCIONI
+MedicalRecordId      string    OPCIONI
+HealthCardId         string    OPCIONI
+HealthCardValidUntil string OPCIONI
+
+}
+Format datuma - "1989-10-21T00:00:00Z"
+
+	BITNO:  Mozes da posaljes ili PersonUid ili sve ove ostale opcione parametre. Ako posaljes sve ostale napravice se nova osoba prilikom pravljenja zaposlenog.
+Response:
+{
+Uid string
+}
+
+4.2.2) Update patient
+Adresa: /auth/nurse/patient/{patientUid}
+Method: PATCH
+Request:
+{
+	Name        string
+	Surname     string
+	JMBG        string
+	DateOfBirth string
+	Address     string
+	Email       string
+MedicalRecordId      string   
+HealthCardId         string   
+HealthCardValidUntil string 
+}
+4.2.3) Read patient
+	Dve opcije, jednog pacijenta ili vise pacijenata.
+Adresa: /auth/nurse/patient/{patientUid}
+Method: GET
+Response:
+{
+	Uid string
+	Name        string
+	Surname     string
+	JMBG        string
+	DateOfBirth string
+	Address     string
+	Email       string
+MedicalRecordId      string   
+HealthCardId         string   
+HealthCardValidUntil string 
+}
+	Za vise pacijenata:
+Adresa: /auth/nurse/patient
+Method: GET
+{
+Patients:[
+{
+Uid string
+	Name        string
+	Surname     string
+	MedicalRecordId      string   
+HealthCardId         string   
+HealthCardValidUntil string 
+},
+{
+Uid string
+	Name        string
+	Surname     string
+	MedicalRecordId      string   
+HealthCardId         string   
+HealthCardValidUntil string 
+}]
+}
+4.2.4) Delete patient
+Adresa: /auth/nurse/patient/{patientUid}
+Method: DELETE
+
+4.3)Examination
+4.3.1)Create examination
+Adresa: /auth/nurse/examination
+Method: POST
+Request:
+{
+	DoctorUid string,
+	PatientUID string,
+	ExaminationDate string
+}
+Response:
+{
+Uid string
+}
+
+Format datuma - "1989-10-21T00:00:00Z"
+4.3.2) Read examinations
+	
+Adresa:  /auth/nurse/examination
+Method: GET
+Response:
+	{
+Examination: [{Uid, DoctorUid,DoctorFullName,PatientUid,PatientFullName,ExaminationDate},{Uid, DoctorUid,DoctorFullName,PatientUid,PatientFullName,ExaminationDate}]
+}
+4.3.4) Delete examinationn
+	Adresa:  /auth/nurse/examination/{examinationUID}
+Method: DELETE
+4.4)Doctors
+4.4.1)Get doctors
+Adresa:  /auth/nurse/doctopr
+Method: GET
+Response:
+{Employees:[
+{
+Uid string
+	Name        string
+	Surname     string
+	WorkDocumentId string
+},
+{
+Uid string
+	Name        string
+	Surname     string
+	WorkDocumentId string
+}]
+}
+
+5)Doctor API
+5.1)Test
+5.1.1)Create test
+	Test se kreira uploadom excel fajla. Uploaad se vrsi POST metodom forme na /auth/doctor/test. U formi se fajl nalazi pod imenom fileUpload. Dodatne vrednosti u formi su ime testa koji  se nalazi u formi sa imenom name i sifra(integer) specijalnosti za koju je test pod imenom specialty.
+Format fajla:
+	U prvoj koloni se nalaze kontrolne reci
+	Pocetak - pocetak strukture pitanja
+	Pitanje - u celiji desno se nalazi tekst pitanja
+	Tip- u celiji desno nalazi se tip (tekst, broj, radio, checkbox)
+	Odgovori - ovo je bitno samo za tipove radio i checkbox, u celijama desno se nalaze     ponudjeni odgovori
+	Kraj - zavrsetak strukture pitanja
+5.1.2)Delete test
+	Adresa: /auth/doctor/test/{testUID}
+Method: DELETE
+5.1.3)Get test
+	Dve opcije: dohvatanje osnovnih informacija o svim testoviima i dohvatanje jednog celog testa.
+Dohvatanje vise:
+Adresa: /auth/doctor/test
+Method: GET
+Response 
+{
+Tests:   
+[
+{Name:”smtssmt”,UID:”uid”, Specialty:”specialtyID”},
+{Name:”smtssmt”,UID:”uid”, Specialty:”specialtyID”}.....
+]
+}
+Dohvatanje jednog:
+Adresa: /auth/doctor/test/{testUID}
+Method: GET
+Response 
+{
+Uid:<uid>,
+Specialty <specialtyID>,
+	Name:<name>
+	Questions: [
+
+
+ 
+            "Type": tip pitanja,
+            "Answers": lista odgovora (stringovi),
+            "Question": tekst pitanja
+  },
+ 
+            "Type": 3,
+            "Answers": [ "1","2","3", "4", "5", "6", "7", "8","9", "10"  ],
+            "Question": "Koliko vas boli glava?"
+        }.......
+
+]
+}
+
+5.2)Popunjen test
+5.1.1)Create filled test
+	Adresa: /auth/doctor/filled
+Method: POST
+Request:
+{
+	"ExaminationUid": string
+	"TestUid":string
+	"Answers":json
+}
+
+5.1.2)Delete filled test
+	Adresa:  /auth/doctor/filled/{filledTestUID}
+Method: DELETE
+5.1.3)Get filled test
+	Dve opcije: dohvatanje osnovnih informacija o svim popunjenim testoviima i dohvatanje jednog celog testa.
+Dohvatanje vise:
+Adresa: /auth/doctor/filled
+Method: GET
+Response 
+{
+FilledTests::   
+[
+ 
+            "Uid": string
+            "TestName": string
+            "ExaminationDate": time
+            "PatientName": string
+            "PatientUid": string
+        
+,
+ 
+            "Uid": "2ef9cbea-6838-11e8-9215-680715485aa3",
+            "TestName": "test",
+            "ExaminationDate": "2018-06-04T00:00:00Z",
+            "PatientName": "Natasha Romanova",
+            "PatientUid": "8cf17e6c-6835-11e8-9215-680715485aa3"
+        
+.....
+]
+}
+Dohvatanje jednog:
+Adresa: /auth/doctor/filled/{filledTestUID}
+Method: GET
+Response
+{
+    "TestUid": "5da8fa28-5c5e-11e8-b3f1-680715485aa3",
+    “TestName”:”name”,
+    "ExaminationUID": "5da8fa28-5c5e-11e8-b3f1-680715485aa3",
+    "Answers": "{'Pittanje1':1,'Pitanje2':'Jeste'}"
+}
+
+Answers su JSON u kome stoji potpuno issta stvar koja je poslata u createFilledTest requestu
+
+5.3) Examinations
+5.3.1) Read examinations
+	
+Adresa:  /auth/doctor/examination
+Method: GET
+Response:
+	{
+Examination: [{Uid, DoctorUid,DoctorFullName,PatientUid,PatientFullName,ExaminationDate},{Uid, DoctorUid,DoctorFullName,PatientUid,PatientFullName,ExaminationDate}]
+}
+

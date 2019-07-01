@@ -6,6 +6,7 @@ import (
 	"errors"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -169,7 +170,7 @@ func (rr *rowReader) ReadAllToStruct(p interface{}) {
 			continue
 		}
 
-		column := value.FieldByName(columnName)
+		column := caseInsenstiveFieldByName(value, columnName)
 		if column == (reflect.Value{}) {
 			continue
 		}
@@ -204,6 +205,11 @@ func (rr *rowReader) ReadAllToStruct(p interface{}) {
 			panic(ErrorUnsupported)
 		}
 	}
+}
+
+func caseInsenstiveFieldByName(v reflect.Value, name string) reflect.Value {
+	name = strings.ToLower(name)
+	return v.FieldByNameFunc(func(n string) bool { return strings.ToLower(n) == name })
 }
 
 // Byte slice readers

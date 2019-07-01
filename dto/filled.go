@@ -13,6 +13,7 @@ type CreateFilledRequest struct {
 
 type GetFilledTestResponse struct {
 	TestUID        string `json:"TestUid"`
+	TestName       string
 	ExaminationUID string `json:"ExaminationUID"`
 	Answers        json.RawMessage
 }

@@ -13,8 +13,6 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 SET search_path = public, pg_catalog;
 
--- Drop current version tables
-
 DROP TABLE IF EXISTS 
 	filled_test,
 	test,
@@ -91,8 +89,6 @@ CREATE TABLE specialty (
 );
 
 ALTER TABLE specialty OWNER TO postgres;
-
-
 
 
 CREATE TABLE system_user (

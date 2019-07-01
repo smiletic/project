@@ -2,24 +2,25 @@ package data
 
 import (
 	"context"
-	"fmt"
 	"projekat/db"
 	"projekat/dto"
-	"projekat/enum"
 )
 
 var (
-	Login         = login
-	CreateSession = createSession
-	GetSession    = getSession
-	RemoveSession = removeSession
+	Login              = login
+	CreateSession      = createSession
+	GetSessionsForUser = getSessionsForUser
+	RemoveSession      = removeSession
 )
 
-func login(ctx context.Context, name, passhash string) (autorizacija *dto.Authorization, err error) {
+func login(ctx context.Context, name, passhash string) (session *dto.SessionInfo, err error) {
 	d := ctx.Value(db.RunnerKey).(db.Runner)
 
 	query := `
-		select s.uid, e.role_id, s.username
+		select
+			s.uid as UserUID, 
+			e.role_id as Role, 
+			s.username as Username
 		from system_user s
 		join employee e on (s.employee_uid = e.uid)
 		where username = $1
@@ -28,7 +29,6 @@ func login(ctx context.Context, name, passhash string) (autorizacija *dto.Author
 	rows, err := d.Query(ctx, query, name, passhash)
 
 	if err != nil {
-		fmt.Println(err)
 		return
 	}
 	defer rows.Close()
@@ -39,11 +39,8 @@ func login(ctx context.Context, name, passhash string) (autorizacija *dto.Author
 	}
 
 	if rr.ScanNext() {
-		autorizacija = &dto.Authorization{}
-
-		autorizacija.UserUID = rr.ReadByIdxString(0)
-		autorizacija.Role = enum.Role(rr.ReadByIdxInt64(1))
-		autorizacija.Username = rr.ReadByIdxString(2)
+		session = &dto.SessionInfo{}
+		rr.ReadAllToStruct(session)
 	}
 
 	err = rr.Error()
@@ -58,7 +55,6 @@ func createSession(ctx context.Context, userUID, token string) (err error) {
 				values ($1, $2)`
 
 	_, err = d.Exec(ctx, query, userUID, token)
-
 	return
 }
 
@@ -73,20 +69,22 @@ func removeSession(ctx context.Context, token string) (err error) {
 	return
 }
 
-func getSession(ctx context.Context, authorization string) (autorizacija *dto.Authorization, err error) {
+func getSessionsForUser(ctx context.Context, userUID string) (sessions []*dto.SessionInfo, err error) {
 	d := ctx.Value(db.RunnerKey).(db.Runner)
 
 	query := `
-		select su.uid, e.role_id, su.username
+		select su.uid as UserUID, 
+		e.role_id as Role, 
+		su.username as Username,
+		ls.token as Token
 		from system_user su
 		join employee e on (su.employee_uid = e.uid)
 		join login_session ls on (su.uid = ls.system_user_uid)
-		where ls.token = $1`
+		where ls.system_user_uid = $1`
 
-	rows, err := d.Query(ctx, query, authorization)
+	rows, err := d.Query(ctx, query, userUID)
 
 	if err != nil {
-		fmt.Println(err)
 		return
 	}
 	defer rows.Close()
@@ -96,12 +94,10 @@ func getSession(ctx context.Context, authorization string) (autorizacija *dto.Au
 		return
 	}
 
-	if rr.ScanNext() {
-		autorizacija = &dto.Authorization{}
-
-		autorizacija.UserUID = rr.ReadByIdxString(0)
-		autorizacija.Role = enum.Role(rr.ReadByIdxInt64(1))
-		autorizacija.Username = rr.ReadByIdxString(2)
+	for rr.ScanNext() {
+		session := &dto.SessionInfo{}
+		rr.ReadAllToStruct(session)
+		sessions = append(sessions, session)
 	}
 
 	err = rr.Error()

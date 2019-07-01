@@ -46,9 +46,9 @@ type dbRunner struct {
 }
 
 // CreateRunner returns database context that is used to access database
-func CreateRunner(db *sql.DB) Runner {
+func CreateRunner() Runner {
 	run := new(dbRunner)
-	run.db = db
+	run.db = handle
 	return run
 }
 

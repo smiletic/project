@@ -40,11 +40,13 @@ func getFilledTest(ctx context.Context, filledTestUID string) (test *dto.GetFill
 	d := ctx.Value(db.RunnerKey).(db.Runner)
 
 	query := `select 
-				test_uid as "TestUID",
-				examination_uid as "ExaminationUID",
-				answers as "Answers"
-	 			from filled_test 
-				where uid = $1`
+				ft.test_uid as "TestUID",
+				t.name as "TestName",
+				ft.examination_uid as "ExaminationUID",
+				ft.answers as "Answers"
+				from filled_test ft
+				join test t on (t.uid = ft.test_uid)
+				where ft.uid = $1`
 
 	rows, err := d.Query(ctx, query, filledTestUID)
 	if err != nil {

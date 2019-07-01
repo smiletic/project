@@ -3,10 +3,10 @@ package core
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"projekat/data"
 	"projekat/dto"
+	"projekat/logger"
 	"projekat/serverErr"
 )
 
@@ -23,7 +23,7 @@ func createPatient(ctx context.Context, requestBody io.Reader) (response *dto.Cr
 	response = &dto.CreatePatientResponse{}
 	err = json.NewDecoder(requestBody).Decode(request)
 	if err != nil {
-		fmt.Println(err)
+		logger.Warn("Request data couldn't be decoded: %v", err)
 		err = serverErr.ErrBadRequest
 		return
 	}
@@ -32,7 +32,7 @@ func createPatient(ctx context.Context, requestBody io.Reader) (response *dto.Cr
 		uid, err1 := data.CreatePerson(ctx, createPersonRequest)
 		if err1 != nil {
 			err = err1
-			fmt.Println(err)
+			logger.Error("Couldn't create person for patient: %v", err)
 			return
 		}
 		request.PersonUID = uid
@@ -40,7 +40,7 @@ func createPatient(ctx context.Context, requestBody io.Reader) (response *dto.Cr
 
 	uid, err := data.CreatePatient(ctx, request)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Couldn't create patient: %v", err)
 		err = serverErr.ErrInternal
 		return
 	}
@@ -53,19 +53,19 @@ func updatePatient(ctx context.Context, patientUID string, requestBody io.Reader
 	request := &dto.UpdatePatientRequest{}
 	err = json.NewDecoder(requestBody).Decode(request)
 	if err != nil {
-		fmt.Println(err)
+		logger.Warn("Request data could not be decoded: %v", err)
 		err = serverErr.ErrBadRequest
 		return
 	}
 	updatePerson := &dto.UpdatePersonRequest{Name: request.Name, Surname: request.Surname, JMBG: request.JMBG, Email: request.Email, Address: request.Address, DateOfBirth: request.DateOfBirth}
 	err = data.UpdatePersonForPatient(ctx, patientUID, updatePerson)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Couldn't update person for patient with uid: %v", patientUID, err)
 		err = serverErr.ErrInternal
 	}
 	err = data.UpdatePatient(ctx, patientUID, request)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Couldn't update patient with uid: %v", patientUID, err)
 		err = serverErr.ErrInternal
 	}
 
@@ -75,7 +75,7 @@ func updatePatient(ctx context.Context, patientUID string, requestBody io.Reader
 func removePatient(ctx context.Context, patientUID string) (err error) {
 	err = data.DeletePatient(ctx, patientUID)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Couldn't delete patient with uid: %v", patientUID, err)
 		err = serverErr.ErrInternal
 	}
 
@@ -86,7 +86,7 @@ func getPatient(ctx context.Context, patientUID string) (response *dto.GetPatien
 
 	response, err = data.GetPatient(ctx, patientUID)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Couldn't get patient with uid: %v", patientUID, err)
 		err = serverErr.ErrInternal
 		return
 	}
@@ -97,7 +97,7 @@ func getPatient(ctx context.Context, patientUID string) (response *dto.GetPatien
 func getPatients(ctx context.Context) (response *dto.GetPatientsResponse, err error) {
 	response, err = data.GetPatients(ctx)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Couldn't get patients with uid: %v", err)
 		err = serverErr.ErrInternal
 	}
 	return

@@ -10,6 +10,7 @@ var (
 	CreateExamination = createExamination
 	DeleteExamination = deleteExamination
 	GetExaminations   = getExaminations
+	GetMyExaminations = getMyExaminations
 )
 
 func createExamination(ctx context.Context, request *dto.CreateExaminationRequest) (uid string, err error) {
@@ -73,6 +74,40 @@ func getExaminations(ctx context.Context) (examinations *dto.GetExaminationsResp
 	 			from examination`
 
 	rows, err := d.Query(ctx, query)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+
+	rr, err := db.GetRowReader(rows)
+	if err != nil {
+		return
+	}
+	examinations = &dto.GetExaminationsResponse{}
+	examinationInfos := make([]*dto.ExaminationInfo, 0)
+	for rr.ScanNext() {
+		examination := &dto.ExaminationInfo{}
+		rr.ReadAllToStruct(examination)
+		examinationInfos = append(examinationInfos, examination)
+	}
+	examinations.Examinations = examinationInfos
+	err = rr.Error()
+	return
+}
+
+func getMyExaminations(ctx context.Context, doctorUID string) (examinations *dto.GetExaminationsResponse, err error) {
+	d := ctx.Value(db.RunnerKey).(db.Runner)
+	query := `select 
+				uid as "UID",
+				doctor_uid as "DoctorUID",
+				doctor_full_name as "DoctorFullName",
+				patient_uid as "PatientUID",
+				patient_full_name as "PatientFullName",
+				examination_date as "ExaminationDate"
+				from examination
+				where doctor_uid = $1`
+
+	rows, err := d.Query(ctx, query, doctorUID)
 	if err != nil {
 		return
 	}
