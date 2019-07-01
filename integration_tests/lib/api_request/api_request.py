@@ -12,7 +12,6 @@ class ApiRequest(object):
         self.request_method = RequestMethod[method]
         self.data = data
         self.api = config['api_url'] + api
-
     def do_request(self):
         if self.request_method == RequestMethod.POST:
             return requests.post(self.api, data=self.data, headers=self.header)
@@ -30,12 +29,29 @@ class ApiRequest(object):
         head = header.get_admin_header()
         if auth != "":
             head["Authorization"] = auth
-        response = ApiRequest(head, "/testingHash", "{}", "POST").do_request()
+        response = ApiRequest(head, "testingHash", "{}", "POST").do_request()
         responseContent = json.loads(response.content)
         head["Authorization"] = responseContent["Auth"]
         
         return ApiRequest(head, request['API'], json.dumps(request['Data']), request['Method']).do_request()
         
+    @staticmethod
+    def do_admin_request(request):
+        head = header.get_admin_header()
+        response = ApiRequest(head, "/testingHash", "{}", "POST").do_request()
+        responseContent = json.loads(response.content)
+        head["Authorization"] = responseContent["Auth"]
+        
+        return ApiRequest(head, request['API'], json.dumps(request['Data']), request['Method']).do_request()
+
+    @staticmethod
+    def do_nurse_request(request):
+        head = header.get_nurse_header()
+        response = ApiRequest(head, "/testingHash", "{}", "POST").do_request()
+        responseContent = json.loads(response.content)
+        head["Authorization"] = responseContent["Auth"]
+        
+        return ApiRequest(head, request['API'], json.dumps(request['Data']), request['Method']).do_request()
 
 class RequestMethod(Enum):
     POST = 1

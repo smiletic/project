@@ -36,6 +36,13 @@ type GetPersonResponse struct {
 	Email       string
 }
 
+type PersonBasicInfo struct {
+	UID     string `json:"Uid"`
+	Name    string
+	Surname string
+	JMBG    string
+}
+
 type GetPersonsResponse struct {
-	Persons []*GetPersonResponse
+	Persons []*PersonBasicInfo
 }

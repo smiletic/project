@@ -11,25 +11,7 @@ import (
 func handleNurse(ctx context.Context, r *http.Request) (response interface{}, err error) {
 	if strings.HasPrefix(r.URL.Path, "/person") {
 		r.URL.Path = r.URL.Path[7:]
-		switch r.Method {
-		case http.MethodPost:
-			return core.CreatePerson(ctx, r.Body)
-		case http.MethodPatch:
-			if strings.HasPrefix(r.URL.Path, "/") {
-				return nil, core.UpdatePerson(ctx, r.URL.Path[1:], r.Body)
-			}
-			return nil, serverErr.ErrBadRequest
-		case http.MethodGet:
-			if strings.HasPrefix(r.URL.Path, "/") {
-				return core.GetPerson(ctx, r.URL.Path[1:])
-			}
-			return core.GetPersons(ctx)
-		case http.MethodDelete:
-			if strings.HasPrefix(r.URL.Path, "/") {
-				return nil, core.RemovePerson(ctx, r.URL.Path[1:])
-			}
-			return nil, serverErr.ErrBadRequest
-		}
+		return handlePerson(ctx, r)
 	}
 	if strings.HasPrefix(r.URL.Path, "/patient") {
 		r.URL.Path = r.URL.Path[8:]

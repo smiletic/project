@@ -57,8 +57,7 @@ func updateUser(ctx context.Context, userUID string, request *dto.UpdateUserRequ
 func deleteUser(ctx context.Context, userUID string) (err error) {
 	d := ctx.Value(db.RunnerKey).(db.Runner)
 
-	query := `delete from user
-				where uid = $1`
+	query := `delete from system_user where uid = $1`
 
 	_, err = d.Exec(ctx, query, userUID)
 
@@ -69,7 +68,7 @@ func getUser(ctx context.Context, userUID string) (user *dto.GetUserResponse, er
 	d := ctx.Value(db.RunnerKey).(db.Runner)
 
 	query := `select 
-				e.uid as "UID",
+				u.uid as "UID",
 				pe.name as "Name",
 				pe.surname as "Surname",
 				pe.jmbg as "JMBG",
@@ -83,7 +82,7 @@ func getUser(ctx context.Context, userUID string) (user *dto.GetUserResponse, er
 				from system_user u
 				join employee e on (u.employee_uid = e.uid)
 				join person pe on (e.person_uid = pe.uid) 
-				where e.uid = $1`
+				where u.uid = $1`
 
 	rows, err := d.Query(ctx, query, userUID)
 	if err != nil {

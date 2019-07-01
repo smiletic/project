@@ -79,6 +79,8 @@ func updateUser(ctx context.Context, userUID string, requestBody io.Reader) (err
 		logger.Error("Couldn't update person for employee with uid %v: %v", employeeUID, err)
 		err = serverErr.ErrInternal
 	}
+
+	request.Password = utils.GetMD5Hash(request.Password)
 	err = data.UpdateUser(ctx, userUID, request)
 	if err != nil {
 		logger.Error("Couldn't update user with uid %v: %v", userUID, err)

@@ -10,15 +10,17 @@
         },
         {
             "Method":"POST", 
-            "API":"logout",
+            "API":"auth/pass",
             "Data":{
+                "OldPass": "spiderman",
+                "NewPass": "mysterio"
             }
         },
         {
             "Method":"POST", 
             "API":"login",
             "Data":{
-                "Username":"mysterio",
+                "Username":"spiderman",
                 "Password":"mysterio"
             }
         }

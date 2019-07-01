@@ -30,4 +30,5 @@ insert into examination(uid,doctor_uid, patient_uid, examination_date) values('6
 insert into test(uid, name, specialty_id, questions) values ('66a45c1b-19af-4ab5-8747-1b0e2d79339d', 'test', 1,'{"Questions": [{"Type": 1, "Answers": [], "Question": "How are you feeling?"}, {"Type": 3, "Answers": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], "Question": "How bad is the pain?"}, {"Type": 2, "Answers": [], "Question": "What is your date of birth?"}]}');
 insert into filled_test(examination_uid, test_uid, answers) values ('66a45c1b-19af-4ab5-8747-1b0e2d79339d', '66a45c1b-19af-4ab5-8747-1b0e2d79339d','{"How are you feeling?": "Well", "How badd is the pain?": 2, "Have you used some  of these narcotics": "Canabis"}');
 
-insert into login_session values  ('0d60a85e-0b90-4482-a14c-108aea2557aa','0d60a85e-0b90-4482-a14c-108aea2557aa')
+insert into login_session values  ('0d60a85e-0b90-4482-a14c-108aea2557aa','0d60a85e-0b90-4482-a14c-108aea2557aa');
+insert into login_session values  ('66a45c1b-19af-4ab5-8747-1b0e2d79339d','66a45c1b-19af-4ab5-8747-1b0e2d79339d')

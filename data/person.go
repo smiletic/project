@@ -147,7 +147,7 @@ func getPersons(ctx context.Context) (persons *dto.GetPersonsResponse, err error
 	}
 	persons = &dto.GetPersonsResponse{}
 	for rr.ScanNext() {
-		person := &dto.GetPersonResponse{}
+		person := &dto.PersonBasicInfo{}
 		rr.ReadAllToStruct(person)
 		persons.Persons = append(persons.Persons, person)
 	}

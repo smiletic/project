@@ -72,6 +72,9 @@ func getPatient(ctx context.Context, patientUID string) (patient *dto.GetPatient
 				p.person_uid as "PersonUID",
 				pe.name as "Name",
 				pe.surname as "Surname",
+				pe.jmbg as "JMBG",
+				pe.address as "Address",
+				pe.email as "Email",
 				p.medical_record_id as "MedicalRecordID",
 				p.health_card_id as "HealthCardID",
 				p.health_card_valid_until as "HealthCardValidUntil"

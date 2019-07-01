@@ -23,7 +23,10 @@ def test_login_logout():
     auth = responseContent['Authorization']
     query = database.query(query_text, userUID, auth)
     assert len(query) == 1
+    
     response = api_request.ApiRequest.login_test_request(requests[1],auth)
     assert response.status_code== 200
     query = database.query(query_text, userUID, auth)
     assert len(query) == 0
+    response = api_request.ApiRequest.login_test_request(requests[2])
+    assert response.status_code== 401
