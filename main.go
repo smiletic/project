@@ -1,13 +1,11 @@
 package main
 
 import (
-	"encoding/gob"
 	"math/rand"
 	"net/http"
 	"os"
 	"projekat/config"
 	"projekat/db"
-	"projekat/dto"
 	"projekat/handler"
 	"projekat/logger"
 	"time"
@@ -18,9 +16,7 @@ import (
 func main() {
 
 	var err error
-	gob.Register(dto.SessionInfo{})
 
-	// Seed function is part of rand initialization.
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	logger.Init(os.Stdout, os.Stdout, os.Stderr)

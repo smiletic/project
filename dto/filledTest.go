@@ -5,10 +5,14 @@ import (
 	"time"
 )
 
-type CreateFilledRequest struct {
+type CreateFilledTestRequest struct {
 	TestUID        string `json:"TestUid"`
 	ExaminationUID string `json:"ExaminationUID"`
 	Answers        json.RawMessage
+}
+
+type CreateFilledTestResponse struct {
+	UID             string `json:"Uid"`
 }
 
 type GetFilledTestResponse struct {

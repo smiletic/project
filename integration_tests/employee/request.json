@@ -50,6 +50,12 @@
             }
         },
         {
+            "Method":"GET", 
+            "API":"/auth/nurse/doctor",
+            "Data":{
+            }
+        },
+        {
             "Method":"DELETE", 
             "API":"auth/admin/employee/",
             "Data":{

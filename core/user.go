@@ -46,7 +46,7 @@ func createUser(ctx context.Context, requestBody io.Reader) (response *dto.Creat
 		}
 		request.EmployeeUID = uid
 	}
-	request.Password = utils.GetMD5Hash(request.Password)
+	request.Password = utils.GetPasswordHash(request.Password)
 	uid, err := data.CreateUser(ctx, request)
 	if err != nil {
 		logger.Error("Couldn't create user: %v", err)
@@ -80,7 +80,7 @@ func updateUser(ctx context.Context, userUID string, requestBody io.Reader) (err
 		err = serverErr.ErrInternal
 	}
 
-	request.Password = utils.GetMD5Hash(request.Password)
+	request.Password = utils.GetPasswordHash(request.Password)
 	err = data.UpdateUser(ctx, userUID, request)
 	if err != nil {
 		logger.Error("Couldn't update user with uid %v: %v", userUID, err)

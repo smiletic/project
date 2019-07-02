@@ -36,8 +36,8 @@ def test_patient():
     response = api_request.ApiRequest.do_nurse_request(requests[1])
     assert response.status_code== 200
     responseContent = json.loads(response.content)
-    employeeUID = responseContent['Uid']
-    query = database.query(query_text, employeeUID)
+    patientUID = responseContent['Uid']
+    query = database.query(query_text, patientUID)
     assert len(query)==1
     personUID = query[0][1]
     assert query[0][2] == results[1]['MedicalRecordId']
@@ -48,10 +48,10 @@ def test_patient():
     assert query[0][3] == results[1]['JMBG']
 
     req = requests[2]
-    req['API'] = req['API'] + employeeUID
+    req['API'] = req['API'] + patientUID
     response = api_request.ApiRequest.do_nurse_request(req)
     assert response.status_code== 200
-    query = database.query(query_text, employeeUID)
+    query = database.query(query_text, patientUID)
     assert len(query)==1
     personUID = query[0][1]
     assert query[0][2] == results[2]['MedicalRecordId']
@@ -72,7 +72,7 @@ def test_patient():
     assert responseContent['Patients'][3]['HealthCardId'] == results[2]['HealthCardId']
 
     req = requests[4]
-    req['API'] = req['API'] + employeeUID
+    req['API'] = req['API'] + patientUID
     response = api_request.ApiRequest.do_nurse_request(req)
     assert response.status_code== 200
     responseContent = json.loads(response.content)
@@ -83,8 +83,8 @@ def test_patient():
     assert responseContent['Email'] == results[2]['Email']
   
     req = requests[5]
-    req['API'] = req['API'] + employeeUID
+    req['API'] = req['API'] + patientUID
     response = api_request.ApiRequest.do_nurse_request(req)
     assert response.status_code== 200
-    query = database.query(query_text, employeeUID)
+    query = database.query(query_text, patientUID)
     assert len(query)==0

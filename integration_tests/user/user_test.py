@@ -64,9 +64,6 @@ def test_user():
     responseContent = json.loads(response.content)
     # Four ussers are added on initialization and two in this test
     assert len(responseContent['Users']) == 6
-    assert responseContent['Users'][5]['WorkDocumentId'] == results[2]['WorkDocumentId']
-    assert responseContent['Users'][5]['Username'] == results[2]['Username']
-    assert responseContent['Users'][5]['RoleId'] == results[2]['RoleId']
 
     req = requests[4]
     req['API'] = req['API'] + userUID

@@ -516,166 +516,286 @@
 			
 			Response: <empty>
 
-4.3)Examination
-4.3.1)Create examination
-Endpoint: /auth/nurse/examination
-Method: POST
-Request:
-{
-	DoctorUid string,
-	PatientUID string,
-	ExaminationDate string
-}
-Response:
-{
-Uid string
-}
+	4.3)Examination
+		4.3.1)Create examination
+			Endpoint: /auth/nurse/examination
+			Method: POST
+			
+			Request:
+			{
+				DoctorUid string,
+				PatientUid string,
+				ExaminationDate string
+			}
+			
+			Response:
+			{
+				Uid string
+			}
 
-Format datuma - "1989-10-21T00:00:00Z"
-4.3.2) Read examinations
-	
-Endpoint:  /auth/nurse/examination
-Method: GET
-Response:
-	{
-Examination: [{Uid, DoctorUid,DoctorFullName,PatientUid,PatientFullName,ExaminationDate},{Uid, DoctorUid,DoctorFullName,PatientUid,PatientFullName,ExaminationDate}]
-}
-4.3.4) Delete examinationn
-	Endpoint:  /auth/nurse/examination/{examinationUID}
-Method: DELETE
-4.4)Doctors
-4.4.1)Get doctors
-Endpoint:  /auth/nurse/doctopr
-Method: GET
-Response:
-{Employees:[
-{
-Uid string
-	Name        string
-	Surname     string
-	WorkDocumentId string
-},
-{
-Uid string
-	Name        string
-	Surname     string
-	WorkDocumentId string
-}]
-}
+		4.3.2) Get examinations
+			Endpoint:  /auth/nurse/examination
+			Method: GET
+
+			Request: <empty>
+			
+			Response:
+			{
+				Examination: [
+					{
+						Uid 			string,
+						DoctorUid 		string,
+						DoctorFullName 	string,
+						PatientUid		string,
+						PatientFullName	string,
+						ExaminationDate string
+					},
+					{
+						Uid 			string,
+						DoctorUid 		string,
+						DoctorFullName 	string,
+						PatientUid		string,
+						PatientFullName	string,
+						ExaminationDate string
+					}
+					...........
+				]
+			}
+		
+		4.3.3) Delete examinationn
+			Endpoint:  /auth/nurse/examination/{examinationUID}
+			Method: DELETE
+
+			Request: <empty>
+
+			Response: <empty>
+
+	4.4)Doctors
+		4.4.1)Get doctors
+			Endpoint:  /auth/nurse/doctor
+			Method: GET
+			
+			Request: <empty>
+			
+			Response:
+			{
+				Employees:[
+					{
+						Uid 			string
+						Name        	string
+						Surname     	string
+						WorkDocumentId 	string
+					},
+					{
+						Uid 			string
+						Name        	string
+						Surname     	string
+						WorkDocumentId 	string
+					}
+				]
+			}
 
 5)Doctor API
-5.1)Test
-5.1.1)Create test
-	Test se kreira uploadom excel fajla. Uploaad se vrsi POST metodom forme na /auth/doctor/test. U formi se fajl nalazi pod imenom fileUpload. Dodatne vrednosti u formi su ime testa koji  se nalazi u formi sa imenom name i sifra(integer) specijalnosti za koju je test pod imenom specialty.
-Format fajla:
-	U prvoj koloni se nalaze kontrolne reci
-	Pocetak - pocetak strukture pitanja
-	Pitanje - u celiji desno se nalazi tekst pitanja
-	Tip- u celiji desno nalazi se tip (tekst, broj, radio, checkbox)
-	Odgovori - ovo je bitno samo za tipove radio i checkbox, u celijama desno se nalaze     ponudjeni odgovori
-	Kraj - zavrsetak strukture pitanja
-5.1.2)Delete test
-	Endpoint: /auth/doctor/test/{testUID}
-Method: DELETE
-5.1.3)Get test
-	Dve opcije: dohvatanje osnovnih informacija o svim testoviima i dohvatanje jednog celog testa.
-Dohvatanje vise:
-Endpoint: /auth/doctor/test
-Method: GET
-Response 
-{
-Tests:   
-[
-{Name:”smtssmt”,UID:”uid”, Specialty:”specialtyID”},
-{Name:”smtssmt”,UID:”uid”, Specialty:”specialtyID”}.....
-]
-}
-Dohvatanje jednog:
-Endpoint: /auth/doctor/test/{testUID}
-Method: GET
-Response 
-{
-Uid:<uid>,
-Specialty <specialtyID>,
-	Name:<name>
-	Questions: [
+	5.1)Test
+		5.1.1)Create test
+			Test is created by uploading excel file(look at the example.xlsx). 
+			Upload is done by doing POST with form on /auth/doctor/test with file in form-data. 
+			In form the file is stored with name fileUpload. 
+			Additional attributes are  "name" with test name and specialty that is speialization enum.
+			File format:
+				Control words are in first column(names are  customizable by changing server.toml)
+				Start - begining of the question structure
+				Question - in the cell to the right of it is the text of the question
+				Type- in a cell to the right is the type of the answer options (text, radio, checkbox, number)
+				Answers - valid only for radio and checkbox, in the cells to the right are the potential answers that are shown to the user
+				End - ending of the question structure
+		5.1.2)Get tests
+			Endpoint: /auth/doctor/test
+			Method: GET
+			
+			Request: <empty>
+			Response 
+				{
+					Tests:   
+					[
+						{
+							"Name": 		string,,
+							"UID":			string, 
+							"Specialty": 	int
+						},
+						{
+							"Name": 		string,,
+							"UID":			string, 
+							"Specialty": 	int
+						}
+						........
+					]
+				}
+		
+		5.1.3)Get tests
+			Endpoint: /auth/doctor/test/{testUID}
+			Method: GET
 
+			Request:<empty>
+		
+			Response 
+			{
+				"Uid": 			string,
+				"Specialty": 	int,
+				"Name":			<name>
+				"Questions": 
+				[
+					{
+						"Type": string,
+						"Answers": []string,
+						"Question": string
+					},
+					.......
+				]
+			}
+		5.1.2)Delete test
+			Endpoint: /auth/doctor/test/{testUID}
+			Method: DELETE
 
- 
-            "Type": tip pitanja,
-            "Answers": lista odgovora (stringovi),
-            "Question": tekst pitanja
-  },
- 
-            "Type": 3,
-            "Answers": [ "1","2","3", "4", "5", "6", "7", "8","9", "10"  ],
-            "Question": "Koliko vas boli glava?"
-        }.......
+			Request:<empty>
 
-]
-}
-
-5.2)Popunjen test
-5.1.1)Create filled test
-	Endpoint: /auth/doctor/filled
-Method: POST
-Request:
-{
-	"ExaminationUid": string
-	"TestUid":string
-	"Answers":json
-}
-
-5.1.2)Delete filled test
-	Endpoint:  /auth/doctor/filled/{filledTestUID}
-Method: DELETE
-5.1.3)Get filled test
-	Dve opcije: dohvatanje osnovnih informacija o svim popunjenim testoviima i dohvatanje jednog celog testa.
-Dohvatanje vise:
-Endpoint: /auth/doctor/filled
-Method: GET
-Response 
-{
-FilledTests::   
-[
- 
-            "Uid": string
-            "TestName": string
-            "ExaminationDate": time
-            "PatientName": string
-            "PatientUid": string
-        
-,
- 
-            "Uid": "2ef9cbea-6838-11e8-9215-680715485aa3",
-            "TestName": "test",
-            "ExaminationDate": "2018-06-04T00:00:00Z",
-            "PatientName": "Natasha Romanova",
-            "PatientUid": "8cf17e6c-6835-11e8-9215-680715485aa3"
-        
-.....
-]
-}
-Dohvatanje jednog:
-Endpoint: /auth/doctor/filled/{filledTestUID}
-Method: GET
-Response
-{
-    "TestUid": "5da8fa28-5c5e-11e8-b3f1-680715485aa3",
-    “TestName”:”name”,
-    "ExaminationUID": "5da8fa28-5c5e-11e8-b3f1-680715485aa3",
-    "Answers": "{'Pittanje1':1,'Pitanje2':'Jeste'}"
-}
-
-Answers su JSON u kome stoji potpuno issta stvar koja je poslata u createFilledTest requestu
-
-5.3) Examinations
-5.3.1) Read examinations
+			Response:<empty
 	
-Endpoint:  /auth/doctor/examination
-Method: GET
-Response:
-	{
-Examination: [{Uid, DoctorUid,DoctorFullName,PatientUid,PatientFullName,ExaminationDate},{Uid, DoctorUid,DoctorFullName,PatientUid,PatientFullName,ExaminationDate}]
-}
+	5.2)Filled test
+		5.2.1)Create filled test
+			Endpoint: /auth/doctor/filled
+			Method: POST
+			
+			Request:
+			{
+				"ExaminationUid": string
+				"TestUid":string
+				"Answers":json
+			}
 
+			Response: <empty>
+	
+		5.2.2)Get filled tests
+			Endpoint: /auth/doctor/filled
+			Method: GET
+
+			Request:<empty>
+
+			Response 
+			{
+				"FilledTests": 
+				[
+					{
+						"Uid": string
+						"TestName": string
+						"ExaminationDate": time
+						"PatientName": string
+						"PatientUid": string
+					},
+					{
+						"Uid": string
+						"TestName": string
+						"ExaminationDate": time
+						"PatientName": string
+						"PatientUid": string
+					}			
+					.....
+				]
+			}
+
+		5.2.3)Get filled test
+			Endpoint: /auth/doctor/filled/{filledTestUID}
+			Method: GET
+
+			Request:<empty>
+
+			Response
+				{
+					"TestUid": 			string,
+					“TestName”:			string,
+					"ExaminationUID": 	string,
+					"Answers": 			json
+				}
+
+		5.2.4)Delete filled test
+			Endpoint:  /auth/doctor/filled/{filledTestUID}
+			Method: DELETE
+
+			Request:<empty>
+
+			Response:<empty>
+	
+
+	5.3) Examinations
+		5.3.1) Read examinations
+			Endpoint:  /auth/doctor/examination
+			Method: GET
+
+			Request: <empty>
+			
+			Response:
+			{
+				Examination: [
+					{
+						Uid 			string, 
+						DoctorUid		string,
+						DoctorFullName	string,
+						PatientUid		string,
+						PatientFullName	string,
+						ExaminationDate	string
+					},
+					{
+						Uid 			string, 
+						DoctorUid		string,
+						DoctorFullName	string,
+						PatientUid		string,
+						PatientFullName	string,
+						ExaminationDate	string
+					}
+					.........
+				]
+			}
+
+6)Research API
+	6.1)Filled tests
+		6.1.1)Get filled tests
+			Endpoint: /auth/research/filled
+			Method: GET
+
+			Request:<empty>
+
+			Response 
+			{
+				"FilledTests": 
+				[
+					{
+						"Uid": string
+						"TestName": string
+						"ExaminationDate": time
+						"PatientName": string
+						"PatientUid": string
+					},
+					{
+						"Uid": string
+						"TestName": string
+						"ExaminationDate": time
+						"PatientName": string
+						"PatientUid": string
+					}			
+					.....
+				]
+			}
+
+		6.1.2)Get filled test
+			Endpoint: /auth/research/filled/{filledTestUID}
+			Method: GET
+
+			Request:<empty>
+
+			Response
+				{
+					"TestUid": 			string,
+					“TestName”:			string,
+					"ExaminationUID": 	string,
+					"Answers": 			json
+				}

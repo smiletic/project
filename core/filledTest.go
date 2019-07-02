@@ -17,8 +17,10 @@ var (
 	GetFilledTests   = getFilledTests
 )
 
-func createFilledTest(ctx context.Context, requestBody io.Reader) (err error) {
-	request := &dto.CreateFilledRequest{}
+func createFilledTest(ctx context.Context, requestBody io.Reader) (response *dto.CreateFilledTestResponse, err error) {
+	request := &dto.CreateFilledTestRequest{}
+	response = &dto.CreateFilledTestResponse{}
+
 	err = json.NewDecoder(requestBody).Decode(request)
 	if err != nil {
 		logger.Warn("Request data cannot be decoded: %v", err)
@@ -26,13 +28,14 @@ func createFilledTest(ctx context.Context, requestBody io.Reader) (err error) {
 		return
 	}
 
-	err = data.CreateFilled(ctx, request)
+	uid, err := data.CreateFilledTest(ctx, request)
 	if err != nil {
 		logger.Error("Couldn't create filled test: %v", err)
 		err = serverErr.ErrInternal
 		return
 	}
 
+	response.UID = uid
 	return
 }
 

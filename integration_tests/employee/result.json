@@ -21,6 +21,21 @@
             "Email":            "may@hotmail.com",
             "WorkDocumentId": 	"bcd345",
             "RoleId":        	2
+        },
+        {
+            "Employees":
+            [
+                {
+                    "Name":"Bruce",
+                    "Surname":"Banner",
+                    "WorkDocumentId":"2352352352352"
+                },
+                {
+                    "Name":"May",
+                    "Surname":"Parker",
+                    "WorkDocumentId":"bcd345"
+                }
+            ]
         }
     ]
 }

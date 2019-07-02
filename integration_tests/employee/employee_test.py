@@ -81,8 +81,19 @@ def test_employee():
     assert responseContent['RoleId'] == results[2]['RoleId']
     assert responseContent['JMBG'] == results[2]['JMBG']
     assert responseContent['Email'] == results[2]['Email']
-  
-    req = requests[5]
+
+    response = api_request.ApiRequest.do_nurse_request(requests[5])
+    assert response.status_code== 200
+    responseContent = json.loads(response.content)
+    assert len(responseContent['Employees']) == 2
+    assert responseContent['Employees'][0]['WorkDocumentId'] == results[3]['Employees'][0]['WorkDocumentId']
+    assert responseContent['Employees'][0]['Name'] == results[3]['Employees'][0]['Name']
+    assert responseContent['Employees'][0]['Surname'] == results[3]['Employees'][0]['Surname'] 
+    assert responseContent['Employees'][1]['WorkDocumentId'] == results[3]['Employees'][1]['WorkDocumentId']
+    assert responseContent['Employees'][1]['Name'] == results[3]['Employees'][1]['Name']
+    assert responseContent['Employees'][1]['Surname'] == results[3]['Employees'][1]['Surname'] 
+
+    req = requests[6]
     req['API'] = req['API'] + employeeUID
     response = api_request.ApiRequest.do_admin_request(req)
     assert response.status_code== 200

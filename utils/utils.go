@@ -14,11 +14,11 @@ import (
 )
 
 var (
-	GetMD5Hash = getMD5Hash
+	GetPasswordHash = getPasswordHash
 	ParseFile  = parseFile
 )
 
-func getMD5Hash(text string) string {
+func getPasswordHash(text string) string {
 	hasher := md5.New()
 	hasher.Write([]byte(text))
 	hash := hex.EncodeToString(hasher.Sum(nil))

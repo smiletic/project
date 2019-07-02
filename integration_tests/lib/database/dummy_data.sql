@@ -31,4 +31,6 @@ insert into test(uid, name, specialty_id, questions) values ('66a45c1b-19af-4ab5
 insert into filled_test(examination_uid, test_uid, answers) values ('66a45c1b-19af-4ab5-8747-1b0e2d79339d', '66a45c1b-19af-4ab5-8747-1b0e2d79339d','{"How are you feeling?": "Well", "How badd is the pain?": 2, "Have you used some  of these narcotics": "Canabis"}');
 
 insert into login_session values  ('0d60a85e-0b90-4482-a14c-108aea2557aa','0d60a85e-0b90-4482-a14c-108aea2557aa');
-insert into login_session values  ('66a45c1b-19af-4ab5-8747-1b0e2d79339d','66a45c1b-19af-4ab5-8747-1b0e2d79339d')
+insert into login_session values  ('66a45c1b-19af-4ab5-8747-1b0e2d79339d','66a45c1b-19af-4ab5-8747-1b0e2d79339d');
+insert into login_session values  ('39240e9f-ae09-4e95-9fd0-a712035c8ad7','39240e9f-ae09-4e95-9fd0-a712035c8ad7');
+insert into login_session values  ('9e4de779-d6a0-44bc-a531-20cdb97178d2','9e4de779-d6a0-44bc-a531-20cdb97178d2');

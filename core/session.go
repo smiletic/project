@@ -30,15 +30,8 @@ const (
 )
 
 func login(ctx context.Context, name, pass string) (*dto.SessionInfo, error) {
-	pass = utils.GetMD5Hash(pass)
+	pass = utils.GetPasswordHash(pass)
 	return data.Login(ctx, name, pass)
-}
-
-func getMD5Hash(text string) string {
-	hasher := md5.New()
-	hasher.Write([]byte(text))
-	hash := hex.EncodeToString(hasher.Sum(nil))
-	return hash
 }
 
 func createSession(ctx context.Context, userUID string) (token string, err error) {

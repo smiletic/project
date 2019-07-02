@@ -52,6 +52,14 @@ class ApiRequest(object):
         head["Authorization"] = responseContent["Auth"]
         
         return ApiRequest(head, request['API'], json.dumps(request['Data']), request['Method']).do_request()
+    @staticmethod
+    def do_doctor_request(request):
+        head = header.get_doctor_header()
+        response = ApiRequest(head, "/testingHash", "{}", "POST").do_request()
+        responseContent = json.loads(response.content)
+        head["Authorization"] = responseContent["Auth"]
+        
+        return ApiRequest(head, request['API'], json.dumps(request['Data']), request['Method']).do_request()
 
 class RequestMethod(Enum):
     POST = 1

@@ -7,21 +7,36 @@ import (
 )
 
 var (
-	CreateFilled     = createFilled
+	CreateFilledTest = createFilledTest
 	DeleteFilledTest = deleteFilledTest
 	GetFilledTest    = getFilledTest
 	GetFilledTests   = getFilledTests
 )
 
-func createFilled(ctx context.Context, createFilledRequest *dto.CreateFilledRequest) (err error) {
+func createFilledTest(ctx context.Context, createFilledTestRequest *dto.CreateFilledTestRequest) (uid string, err error) {
 	d := ctx.Value(db.RunnerKey).(db.Runner)
 
 	query := `insert into filled_test 
 				(test_uid, examination_uid, answers) 
-				values ($1, $2, $3)`
+				values ($1, $2, $3)
+				returning uid`
 
-	_, err = d.Exec(ctx, query, createFilledRequest.TestUID, createFilledRequest.ExaminationUID, createFilledRequest.Answers)
+	rows, err := d.Query(ctx, query, createFilledTestRequest.TestUID, createFilledTestRequest.ExaminationUID, createFilledTestRequest.Answers)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
 
+	rr, err := db.GetRowReader(rows)
+	if err != nil {
+		return
+	}
+
+	if rr.ScanNext() {
+		uid = rr.ReadByIdxString(0)
+	}
+
+	err = rr.Error()
 	return
 }
 

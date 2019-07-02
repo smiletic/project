@@ -1,7 +1,0 @@
-Ideja iza servera:
-
-Disclaimer:
--zbog brzine razvoja kod u paketu db je uzet sa interneta
-
-Pretpostavka:
--ispred servera postoji neki webserver tipa nginx-a koji vrsi enkripciju http u https i lepi Access-control headere

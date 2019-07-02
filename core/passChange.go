@@ -24,7 +24,7 @@ func changePass(ctx context.Context, requestBody io.Reader, userUID string) (err
 		return
 	}
 
-	passed, err := data.CheckPassword(ctx, utils.GetMD5Hash(request.OldPass), userUID)
+	passed, err := data.CheckPassword(ctx, utils.GetPasswordHash(request.OldPass), userUID)
 	if err != nil {
 		logger.Error("Couldn't check old password: %v")
 		err = serverErr.ErrInternal
@@ -35,7 +35,7 @@ func changePass(ctx context.Context, requestBody io.Reader, userUID string) (err
 		err = serverErr.ErrNotAuthenticated
 		return
 	}
-	err = data.ChangePassword(ctx, utils.GetMD5Hash(request.NewPass), userUID)
+	err = data.ChangePassword(ctx, utils.GetPasswordHash(request.NewPass), userUID)
 	if err != nil {
 		logger.Error("Couldn't change password: %v", err)
 		err = serverErr.ErrInternal

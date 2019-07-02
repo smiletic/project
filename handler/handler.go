@@ -17,8 +17,6 @@ import (
 	"projekat/serverErr"
 	"strings"
 	"time"
-
-	"github.com/gorilla/sessions"
 )
 
 var (
@@ -34,10 +32,6 @@ const (
 
 	httpErrForbidden = "Forbidden"
 	httpErrInternal  = "Internal"
-)
-
-var (
-	store = sessions.NewCookieStore([]byte("09816973ba8863acb8b4adebafad115cdd3c28c9cc3201f80f2b14261cb8dc12"))
 )
 
 func handleTestingHash(w http.ResponseWriter, r *http.Request) {
@@ -88,6 +82,7 @@ func handleAuthorized(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx = context.WithValue(ctx, core.UserKey, userSession)
 
+	// Removing /auth
 	r.URL.Path = r.URL.Path[5:]
 
 	response, err := handle(ctx, r)

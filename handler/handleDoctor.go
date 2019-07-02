@@ -30,7 +30,7 @@ func handleDoctor(ctx context.Context, r *http.Request) (response interface{}, e
 		r.URL.Path = r.URL.Path[7:]
 		switch r.Method {
 		case http.MethodPost:
-			return nil, core.CreateFilledTest(ctx, r.Body)
+			return core.CreateFilledTest(ctx, r.Body)
 		case http.MethodGet:
 			if strings.HasPrefix(r.URL.Path, "/") {
 				return core.GetFilledTest(ctx, r.URL.Path[1:])

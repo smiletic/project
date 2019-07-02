@@ -107,7 +107,7 @@ func getUser(ctx context.Context, userUID string) (user *dto.GetUserResponse, er
 func getUsers(ctx context.Context) (users *dto.GetUsersResponse, err error) {
 	d := ctx.Value(db.RunnerKey).(db.Runner)
 	query := `select 
-				e.uid as "UID",
+				u.uid as "UID",
 				pe.name as "Name",
 				pe.surname as "Surname",
 				e.work_document_id as "WorkDocumentID",
@@ -116,7 +116,8 @@ func getUsers(ctx context.Context) (users *dto.GetUsersResponse, err error) {
 				u.password as "Password"
 				from system_user u
 				join employee e on (u.employee_uid = e.uid)
-				join person pe on (e.person_uid = pe.uid)`
+				join person pe on (e.person_uid = pe.uid)
+				order by u.uid asc`
 
 	rows, err := d.Query(ctx, query)
 	if err != nil {
